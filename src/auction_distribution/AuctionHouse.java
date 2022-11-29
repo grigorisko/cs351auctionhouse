@@ -2,7 +2,7 @@ package auction_distribution;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Is a Client (to Bank) and Server (to Agent)
@@ -12,8 +12,12 @@ public class AuctionHouse {
     private BufferedReader bufferedReader;
     private PrintWriter printWriter;
     private String companyName;
+    private List<Item> inventoryList = new ArrayList<Item>();
+    private List<Item> itemsOnSale = new ArrayList<Item>();
+    private int itemID = 0;
 
     public AuctionHouse(String address, int port) throws IOException {
+
         // Gets company name
         System.out.println("Company Name:");
         Scanner scanner = new Scanner(System.in);
@@ -62,6 +66,44 @@ public class AuctionHouse {
                 }
             }
         }).start();
+    }
+
+    private Item sellNewItem() {
+        Random rand = new Random();
+        Item itemToSell = inventoryList.get(rand.nextInt(inventoryList.size()));
+        itemToSell.setItemID(itemID);
+        itemID++;
+        return itemToSell;
+    }
+
+    private void initializeInventory() {
+        try (BufferedReader reader =
+                     new BufferedReader(new InputStreamReader
+                             (getClass().getClassLoader().getResourceAsStream("inventory")))) {
+            String line;
+            String[] words;
+            while ((line = reader.readLine()) != null) {
+                words = line.split(" ");
+                String itemName = words[0];
+                String description="";
+                for (int i=1;i<words.length;i++) {
+                    if(i==words.length-1) {
+                        description += words[i];
+                    }
+                    else {
+                        description += words[i] + " ";
+                    }
+                }
+                Item newItem = new Item(itemName,description);
+                inventoryList.add(newItem);
+            }
+            for (int i=0;i<3;i++) {
+                itemsOnSale.add(sellNewItem());
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void main(String[] args) throws IOException {
