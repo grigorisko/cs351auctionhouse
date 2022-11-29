@@ -20,7 +20,7 @@ public class Bank {
         while(!serverSocket.isClosed()){
             // Connect Ports, Readers, Writers
             Socket clientSocket = serverSocket.accept();
-            Thread clientThread = new Thread(new BankClientHandler(clientSocket, id));
+            Thread clientThread = new Thread(new BankProxy(clientSocket, id));
             clientThread.start();
             id++;
         }
