@@ -11,23 +11,59 @@ import java.util.ArrayList;
  * Waits for input from Auction House to send to Bank
  */
 public class BankProxy implements Runnable{
-    private static ArrayList<BankProxy> clients = new ArrayList();
+    private static ArrayList<String> activeAuctionHouses = new ArrayList<>();
     private Socket clientSocket;
     private BufferedReader bufferedReader;
     private PrintWriter printWriter;
-    private String clientName;
     private int ID;
 
     public BankProxy(Socket clientSocket, int id) throws IOException {
+        // Socket connection w/ Client
         this.clientSocket = clientSocket;
         this.ID = id;
         bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         printWriter = new PrintWriter(clientSocket.getOutputStream());
 
-        System.out.println("New Client Connected.");
+        // Get Initial Client Data (format: name;clientType;address;port)
+        String clientInfo = bufferedReader.readLine();
 
-        // Add to our clients list
-        clients.add(this);
+        // Parse initial client data based what client connected (AH or Agent)
+        if(clientInfo.toLowerCase().contains("server")){  // Client = AH
+            System.out.println("New <AuctionHouse> Connected w/ Server details: " + clientInfo);
+
+            // Add AuctionHouse to list of active AuctionHouses
+            String auctionHouseServer = clientInfo.split("server;")[1];
+            addAuctionHouse(auctionHouseServer);
+
+        }else{  // Client = Agent
+            System.out.println("New <Agent> Connected w/ details: " + clientInfo);
+
+            // Send client list of active AuctionHouses
+            printWriter.println(getActiveAuctionHouses());
+            printWriter.flush();
+        }
+    }
+
+    /**
+     * Adds an auction house to our list of active auction houses.
+     *  Method used for synchronization purposes.
+     * @param auctionHouse
+     */
+    private synchronized void addAuctionHouse(String auctionHouse){
+        activeAuctionHouses.add(auctionHouse);
+    }
+
+    /**
+     * Returns a String of all address & ports of our active auction houses.
+     * @return string formatted as: address1;port address2;port
+     */
+    private synchronized String getActiveAuctionHouses(){
+        String listAsString = "";
+        for(String auctionServer: activeAuctionHouses){
+            listAsString = listAsString + " " + auctionServer;
+        }
+
+        return listAsString;
     }
 
 

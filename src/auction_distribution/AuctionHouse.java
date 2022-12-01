@@ -1,6 +1,7 @@
 package auction_distribution;
 
 import java.io.*;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
 
@@ -8,6 +9,7 @@ import java.util.*;
  * Is a Client (to Bank) and Server (to Agent)
  */
 public class AuctionHouse {
+    private ServerSocket serverSocket;
     private Socket socket;
     private BufferedReader bufferedReader;
     private PrintWriter printWriter;
@@ -27,6 +29,44 @@ public class AuctionHouse {
         socket = new Socket("localhost", 4999);
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         printWriter = new PrintWriter(socket.getOutputStream());
+
+        // Create AuctionHouse Server
+        int random = new Random().nextInt(1000,5000);
+        serverSocket = new ServerSocket(random);  // TODO: change this to be actual address & port
+
+        // Send Server Data to bank
+        int serverPort = serverSocket.getLocalPort();
+        sendBankMsg("server;localhost;"+serverPort);
+    }
+
+    /**
+     * Sends a message to Bank
+     * @param message
+     */
+    private void sendBankMsg(String message){
+        printWriter.println(companyName + ";" + message);
+        printWriter.flush();
+    }
+
+    /**
+     * Starts AuctionHouse Server
+     * @throws IOException
+     */
+    private void startServer() throws IOException {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(!serverSocket.isClosed()){
+                    try {
+                        Socket clientSocket = serverSocket.accept();
+                        Thread thread = new Thread(new AuctionHouseProxy(clientSocket));
+                        thread.start();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }).start();
     }
 
     /**
@@ -54,7 +94,7 @@ public class AuctionHouse {
     /**
      * Sends a message, when we type something into Console.
      */
-    private void message(){
+    private void sendConsoleInput(){
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -110,7 +150,8 @@ public class AuctionHouse {
     public static void main(String[] args) throws IOException {
         AuctionHouse auctionHouse = new AuctionHouse();
         auctionHouse.listen();
-        auctionHouse.message();
+        auctionHouse.sendConsoleInput();
+        auctionHouse.startServer();
     }
 
 }

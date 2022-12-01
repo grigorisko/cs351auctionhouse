@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Agent {
@@ -12,6 +14,7 @@ public class Agent {
     private BufferedReader bufferedReader;
     private PrintWriter printWriter;
     private String username;
+    private ArrayList<Socket> connectedAHs;  //List of Available Auction Houses
 
     public Agent() throws IOException {
         // Gets username
@@ -23,6 +26,22 @@ public class Agent {
         socket = new Socket("localhost", 4999);
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         printWriter = new PrintWriter(socket.getOutputStream());
+
+        // Send Initial Client Information
+        sendBankMsg(username + ";agent");
+
+        // Get List of Active Auction Houses
+        connectedAHs = new ArrayList<>();
+        String activeAHs = bufferedReader.readLine();
+        System.out.println("Active Auction Houses = " + activeAHs);
+
+        // Connect to ALL Active Auction Houses
+
+    }
+
+    private void sendBankMsg(String message){
+        printWriter.println(message);
+        printWriter.flush();
     }
 
 
@@ -52,7 +71,7 @@ public class Agent {
     /**
      * Sends a message, when we type something into Console.
      */
-    private void message(){
+    private void sendConsoleInput(){
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -70,6 +89,6 @@ public class Agent {
     public static void main(String[] args) throws IOException {
         Agent agent = new Agent();
         agent.listen();
-        agent.message();
+        agent.sendConsoleInput();
     }
 }
