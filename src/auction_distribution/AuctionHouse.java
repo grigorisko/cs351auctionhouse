@@ -16,14 +16,15 @@ public class AuctionHouse {
     private List<Item> itemsOnSale = new ArrayList<Item>();
     private int itemID = 0;
 
-    public AuctionHouse(String address, int port) throws IOException {
+    public AuctionHouse() throws IOException {
 
         // Gets company name
         System.out.println("Company Name:");
         Scanner scanner = new Scanner(System.in);
         companyName = scanner.nextLine();
 
-        socket = new Socket(address, port);
+        // Create Bank-AuctionHouse Connection
+        socket = new Socket("localhost", 4999);
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         printWriter = new PrintWriter(socket.getOutputStream());
     }
@@ -51,7 +52,7 @@ public class AuctionHouse {
     }
 
     /**
-     * Sends a message
+     * Sends a message, when we type something into Console.
      */
     private void message(){
         new Thread(new Runnable() {
@@ -107,7 +108,7 @@ public class AuctionHouse {
     }
 
     public static void main(String[] args) throws IOException {
-        AuctionHouse auctionHouse = new AuctionHouse("localhost", 4999);
+        AuctionHouse auctionHouse = new AuctionHouse();
         auctionHouse.listen();
         auctionHouse.message();
     }

@@ -5,32 +5,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Scanner;
 
-/**
- * Waits for input from Auction House to send to Bank
- */
-public class BankClientHandler implements Runnable{
-    private static ArrayList<BankClientHandler> clients = new ArrayList();
+public class AuctionHouseProxy implements Runnable{
     private Socket clientSocket;
     private BufferedReader bufferedReader;
-    private PrintWriter printWriter;
-    private String clientName;
-    private int ID;
+    private PrintWriter printerWriter;
 
-    public BankClientHandler(Socket clientSocket, int id) throws IOException {
+    public AuctionHouseProxy(Socket clientSocket) throws IOException {
         this.clientSocket = clientSocket;
-        this.ID = id;
         bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        printWriter = new PrintWriter(clientSocket.getOutputStream());
+        printerWriter = new PrintWriter(clientSocket.getOutputStream());
 
-        System.out.println("New Client Connected.");
-
-        // Add to our clients list
-        clients.add(this);
+        System.out.println("New Bidder Connected.");
     }
-
 
     /**
      * Listen for Incoming Messages
@@ -39,7 +26,7 @@ public class BankClientHandler implements Runnable{
     public void run() {
         String clientMessage = "";
         while(clientSocket.isConnected() && clientMessage != null){
-            try {
+            try{
                 clientMessage = bufferedReader.readLine();
                 if(clientMessage != null){
                     System.out.println(clientMessage);
@@ -48,12 +35,13 @@ public class BankClientHandler implements Runnable{
 
 
                     // Send message back.
-                    printWriter.println("Thanks for responding.");
-                    printWriter.flush();
+                    printerWriter.println("Processing Bid.");
+                    printerWriter.flush();
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
+
     }
 }
