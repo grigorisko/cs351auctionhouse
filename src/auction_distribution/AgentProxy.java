@@ -95,6 +95,9 @@ public class AgentProxy implements Runnable{
                         System.out.println("You want to check balance...");
                     }
 
+                    else{
+                        System.out.println("unable to find keywords...");
+                    }
                 }
             }
         }).start();
