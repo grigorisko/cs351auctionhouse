@@ -15,16 +15,14 @@ public class BankProxy implements Runnable{
     private Socket clientSocket;
     private BufferedReader bufferedReader;
     private PrintWriter printWriter;
-    private int ID;
-    private int balance;
-    private int lockedBalance=0;
+    private BankAccount bankAccount;
     private boolean isAuctionHouse = false;
-    private static ArrayList<BankProxy> bankAccounts = new ArrayList<>();
+    private static ArrayList<BankAccount> bankAccounts = new ArrayList<>();
 
-    public BankProxy(Socket clientSocket, int id) throws IOException {
+    public BankProxy(Socket clientSocket, String accountNumber) throws IOException {
         // Socket connection w/ Client
         this.clientSocket = clientSocket;
-        this.ID = id;
+
         bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         printWriter = new PrintWriter(clientSocket.getOutputStream());
 
@@ -34,21 +32,20 @@ public class BankProxy implements Runnable{
         // Parse initial client data based what client connected (AH or Agent)
         if(clientInfo.toLowerCase().contains("server")){  // Client = AH
             System.out.println("New <AuctionHouse> Connected w/ Server details: " + clientInfo);
-
-            this.balance = 0;
+            this.bankAccount = new BankAccount(accountNumber, 0);
             this.isAuctionHouse = true;
 
             // Add AuctionHouse to list of active AuctionHouses
             String auctionHouseServer = clientInfo.split("server;")[1];
             addAuctionHouse(auctionHouseServer);
 
-            bankAccounts.add(this);
+            bankAccounts.add(this.bankAccount);
 
         }else{  // Client = Agent
             System.out.println("New <Agent> Connected w/ details: " + clientInfo);
 
-            this.balance = 1000;
-            bankAccounts.add(this);
+            this.bankAccount = new BankAccount(accountNumber, 1000);
+            bankAccounts.add(this.bankAccount);
 
             // Send client list of active AuctionHouses
             printWriter.println(getActiveAuctionHouses());
@@ -96,9 +93,9 @@ public class BankProxy implements Runnable{
                     //balance;id;bidAmount
                     if(clientMessage.contains("balance;") && this.isAuctionHouse) {
                         String[] words = clientMessage.split(";");
-                        for (BankProxy bankProxy:bankAccounts) {
-                            if (Integer.parseInt(words[1]) == bankProxy.getID()) {
-                                if(bankProxy.checkBalance(Integer.parseInt(words[2]))) {
+                        for (BankAccount bankAccount:bankAccounts) {
+                            if (words[1].equals(bankAccount.getAccountNumber())) {
+                                if(bankAccount.checkBalance(Integer.parseInt(words[2]))) {
                                     //accept bid
                                     //lock balance
                                     printWriter.println("Bid accepted");
@@ -115,11 +112,11 @@ public class BankProxy implements Runnable{
                     //received from either
                     else if(clientMessage.equalsIgnoreCase("balance")) {
                         if (this.isAuctionHouse) {
-                            printWriter.println("Available Balance: " + this.getBalance());
+                            printWriter.println("Available Balance: " + this.bankAccount.getBalance());
                         }
                         else {
-                            int totalBalance = this.getBalance()+this.lockedBalance;
-                            printWriter.println("Available Balance: " + this.getBalance() + ", "+
+                            int totalBalance = bankAccount.getBalance()+bankAccount.getLockedBalance();
+                            printWriter.println("Available Balance: " + bankAccount.getBalance() + ", "+
                                     "Total Balance: " + totalBalance);
                         }
                     }
@@ -133,10 +130,9 @@ public class BankProxy implements Runnable{
                     //received from agent
                     else if(clientMessage.contains("finalize;")) {
                         String[] words = clientMessage.split(";");
-                        BankProxy auctionHouse;
-                        for(BankProxy bankProxy:bankAccounts) {
-                            if(Integer.parseInt(words[1]) == bankProxy.getID()) {
-                                sendPayment(Integer.parseInt(words[2]), bankProxy);
+                        for(BankAccount bankAccount:bankAccounts) {
+                            if(words[1].equals(bankAccount.getAccountNumber())) {
+                                bankAccount.sendPayment(Integer.parseInt(words[2]), bankAccount);
                             }
                         }
                     }
@@ -153,36 +149,5 @@ public class BankProxy implements Runnable{
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    //check if balance is enough for bid
-    public synchronized boolean checkBalance(int bidAmount) {
-        if(bidAmount<=this.balance) {
-            this.balance-=bidAmount;
-            this.lockedBalance+=bidAmount;
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-    //send a payment to specified account
-    public synchronized void sendPayment(int amount,BankProxy account) {
-        this.lockedBalance -= amount;
-        account.receivePayment(amount);
-    }
-
-    //add to balance when receiving a payment
-    public synchronized void receivePayment(int amount) {
-        this.balance+=amount;
-    }
-
-    public int getID() {
-        return ID;
-    }
-
-    public int getBalance() {
-        return balance;
     }
 }
