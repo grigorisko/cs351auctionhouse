@@ -1,4 +1,9 @@
 package auction_distribution;
+/** TODO
+ *  Create the hashmap for easier access with the Host and the port information
+ *  Maybe a function that give out the port and host information through the name of the company (auction house)
+ *  Communicate to the bank?????????
+ */
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -6,7 +11,7 @@ import java.net.Socket;
 import java.util.*;
 
 /**
- * Is a Client (to Bank) and Server (to Agent)
+ * Is a Client (to Bank) and Server (to Agent)Bid
  */
 public class AuctionHouse {
     private ServerSocket serverSocket;
@@ -15,7 +20,7 @@ public class AuctionHouse {
     private PrintWriter printWriter;
     private String companyName;
     private List<Item> inventoryList = new ArrayList<Item>();
-    private List<Item> itemsOnSale = new ArrayList<Item>();
+    private static List<Item> itemsOnSale = new ArrayList<Item>();
     private int itemID = 0;
 
     public AuctionHouse() throws IOException {
@@ -37,6 +42,9 @@ public class AuctionHouse {
         // Send Server Data to bank
         int serverPort = serverSocket.getLocalPort();
         sendBankMsg("server;localhost;"+serverPort);
+
+        initializeInventory();
+        System.out.println(itemsOnSale.toString());
     }
 
     /**
@@ -153,5 +161,13 @@ public class AuctionHouse {
         auctionHouse.sendConsoleInput();
         auctionHouse.startServer();
     }
+    public static List<Item> getItemsOnSale() {
+        return itemsOnSale;
+    }
+
+    public List<Item> getInventoryList(){
+        return inventoryList;
+    }
+
 
 }

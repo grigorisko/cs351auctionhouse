@@ -8,7 +8,16 @@ public class Item {
     private int timeLeft;
     private int currentWinner;
     private double minimumBid;
+    private double defaultPrice;
 
+    public Item(String itemName, String description, double defaultPrice, int itemId) {
+        this.itemName = itemName;
+        this.description = description;
+        this.defaultPrice = defaultPrice;
+        this.itemID = itemId;
+        currentBid = 0;
+        minimumBid = 1;
+    }
     public Item(String itemName, String description) {
         this.itemName = itemName;
         this.description = description;
@@ -46,5 +55,13 @@ public class Item {
 
     public double getMinimumBid() {
         return minimumBid;
+    }
+
+    public double getDefaultPrice() {
+        return defaultPrice;
+    }
+
+    public void setDefaultPrice(double defaultPrice) {
+        this.defaultPrice = defaultPrice;
     }
 }
