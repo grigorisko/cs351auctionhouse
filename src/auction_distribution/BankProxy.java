@@ -113,17 +113,21 @@ public class BankProxy implements Runnable{
                     else if(clientMessage.equalsIgnoreCase("balance")) {
                         if (this.isAuctionHouse) {
                             printWriter.println("Available Balance: " + this.bankAccount.getBalance());
+                            printWriter.flush();
                         }
                         else {
                             int totalBalance = bankAccount.getBalance()+bankAccount.getLockedBalance();
                             printWriter.println("Available Balance: " + bankAccount.getBalance() + ", "+
                                     "Total Balance: " + totalBalance);
+                            printWriter.flush();
+
                         }
                     }
                     //auction house inquiry
                     //received from agent
                     else if(clientMessage.equalsIgnoreCase("auction houses")) {
                         printWriter.println(getActiveAuctionHouses());
+                        printWriter.flush();
                     }
                     //finalize bid payment format
                     //finalize;auctionhouseid;amount

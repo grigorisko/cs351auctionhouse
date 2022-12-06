@@ -75,15 +75,98 @@ public class AgentProxy implements Runnable{
         out.flush();
     }
 
-
+    //enum for menu state
+    enum Menu {
+        FIRST,
+        SECOND,
+        THIRD,
+    }
     /**
      * Gets Console Input
      */
     private void consoleInput(){
         new Thread(() -> {
             Scanner scanner = new Scanner(System.in);
+            Menu menu = Menu.FIRST;
             try {
                 while(agentToBankSocket.isConnected()){
+                    //print correct menu depending on state
+                    if(menu.equals(Menu.FIRST)) {
+                        System.out.println("1. Check Balance");
+                        System.out.println("2. View Available Auction Houses");
+                        System.out.println("3. Exit");
+                        String menuInput = scanner.nextLine();
+                        if(menuInput.equals("1")) {
+                            //send message to bank to retrieve balance
+                            sendBankMsg("balance");
+                            String balance = in.readLine();
+                            System.out.println(balance);
+                            menu = Menu.FIRST;
+                        }
+                        else if(menuInput.equals("2")) {
+                            menu = Menu.SECOND;
+                        }
+                        else if(menuInput.equals("3"));{
+                            //exitlogic
+                            //check if active bids
+                            //if not, exit
+                        }
+
+                    }
+                    else if(menu.equals(Menu.SECOND)) {
+                        for(int i=0;i<connectedAHs.size();i++) {
+                            int menuEntry = i+1;
+                            System.out.println(menuEntry +". Auction House " + menuEntry);
+                        }
+                        int previousEntry = connectedAHs.size()+1;
+                        System.out.println(previousEntry + ". Previous Menu");
+                        String menuInput = scanner.nextLine();
+                        if(menuInput.equals("" + previousEntry)) {
+                            menu = Menu.FIRST;
+                        }
+                        else {
+                            for(int i=0;i<connectedAHs.size();i++) {
+                                int menuEntry = i + 1;
+                                String auctionHouseOption = "" + menuEntry;
+                                if (menuInput.equals(auctionHouseOption)) {
+                                    //set auction house
+                                    menu = Menu.THIRD;
+                                }
+                            }
+                        }
+                    }
+                    else if(menu.equals(Menu.THIRD)) {
+                        System.out.println("Bid on an item using format: itemID bidAmount");
+                        //get items on sale from selected auction house
+                        for(int i=0;i<3;i++){//for(int i=0;i<items.size();i++) {
+                            int menuEntry = i+1;
+                            //System.out.println(menuEntry + ". " +items[1].Info);
+                        }
+                        int previousEntry = 3+1;//items.size() + 1;
+                        System.out.println(previousEntry + ". Previous Menu");
+                        String menuInput = scanner.nextLine();
+                        if(menuInput.equals("" + previousEntry)) {
+                            menu = Menu.SECOND;
+                        }
+                        else {
+                            for(int i=0;i<3;i++){//for(int i=0;i<items.size();i++) {
+                                int menuEntry = i + 1;
+                                String itemSelected = "" + menuEntry;
+                                if (menuInput.equals(itemSelected)) {
+                                    //set item to bid on
+                                    String[] words = menuInput.split(" ");
+                                    try{
+                                        int bid = Integer.parseInt(words[1]);
+                                        //send bid to auction house
+                                    } catch (NumberFormatException e) {
+                                        System.out.println("Incorrect bid amount input");
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
                     String input = scanner.nextLine();
 
                     // Find Keywords & Process input
@@ -127,6 +210,8 @@ public class AgentProxy implements Runnable{
 //                        System.out.println("unable to find keywords...");
 //                    }
                 }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             } finally {
                 out.close();
                 try {
