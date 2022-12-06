@@ -17,9 +17,15 @@ public class AgentProxy implements Runnable{
     private ArrayList<AgentProxy> clients;
     private int bankBalance;
     private int trueBalance;
+
+    private String balanceMessage = "";
+
+    private String bankAccountNumber;
     private String clientName;
     private List<Item> chosenList;
-    private ArrayList<Socket> connectedAHs;  //List of Available Auction Houses
+    private ArrayList<AgentAHProxy> connectedAHs; //proxy list of AHs
+    private AgentAHProxy selectedAH;
+    private boolean messageParsed = true; //boolean to wait for message parsing before displaying in console
 
     public AgentProxy(Socket agentSocket, ArrayList<AgentProxy> clients) throws IOException {
         this.agentToBankSocket = agentSocket;
@@ -36,6 +42,9 @@ public class AgentProxy implements Runnable{
         System.out.println("Bidding Username:");
         Scanner scanner = new Scanner(System.in);
         clientName = scanner.nextLine();
+        System.out.println("Initial Balance:");
+        double initialBalance = scanner.nextDouble();
+        String initialBalanceMsg = "initialbalance:" + initialBalance;
 
         // Create Agent-Bank Connection
         this.agentToBankSocket = socket;
@@ -45,23 +54,33 @@ public class AgentProxy implements Runnable{
         this.trueBalance = 0;
         System.out.println("Connected to a new Server.");
 
+
         // Send Initial Client Information to Bank
         sendBankMsg("agent;");
 
+        sendBankMsg(initialBalanceMsg);
+
+
         // Get List of Active Auction Houses from Bank
         connectedAHs = new ArrayList<>();
+        // Get bank account number
+        bankAccountNumber = in.readLine().split(":")[1];
         String[] activeAHs = in.readLine().strip().split(" ");
         System.out.println(activeAHs.toString());
         System.out.println("Active Auction Houses = " + Arrays.toString(activeAHs));
-
         // Connect to ALL Active Auction Houses
-        for(String ahServer : activeAHs){
-            String address = ahServer.split(";")[0];
-            int port = Integer.parseInt(ahServer.split(";")[1]);
-            System.out.println("Trying to Connect to " + address + " w/ port " + port);
-            Socket newConnectedServer = new Socket(address, port);
-            connectedAHs.add(newConnectedServer);
+        // check that there are auction houses
+        if(activeAHs.length>1) {
+            for (String ahServer : activeAHs) {
+                String address = ahServer.split(";")[0];
+                int port = Integer.parseInt(ahServer.split(";")[1]);
+                System.out.println("Trying to Connect to " + address + " w/ port " + port);
+                Socket newConnectedServer = new Socket(address, port);
+                AgentAHProxy ahProxy = new AgentAHProxy(newConnectedServer);
+                connectedAHs.add(ahProxy);
+                //connectedAHs.add(newConnectedServer);
 
+            }
         }
 
 
@@ -70,7 +89,7 @@ public class AgentProxy implements Runnable{
     }
 
 
-    private void sendBankMsg(String message){
+    private void sendBankMsg(String message) {
         out.println(message);
         out.flush();
     }
@@ -88,6 +107,7 @@ public class AgentProxy implements Runnable{
         new Thread(() -> {
             Scanner scanner = new Scanner(System.in);
             Menu menu = Menu.FIRST;
+            String items = "";
             try {
                 while(agentToBankSocket.isConnected()){
                     //print correct menu depending on state
@@ -96,11 +116,17 @@ public class AgentProxy implements Runnable{
                         System.out.println("2. View Available Auction Houses");
                         System.out.println("3. Exit");
                         String menuInput = scanner.nextLine();
+                        System.out.println(menuInput);
                         if(menuInput.equals("1")) {
                             //send message to bank to retrieve balance
                             sendBankMsg("balance");
-                            String balance = in.readLine();
-                            System.out.println(balance);
+                            messageParsed = false;
+                            //wait for message to be parsed by listener
+                            while(!messageParsed) {
+
+                            }
+                            //print out balance
+                            System.out.println(balanceMessage);
                             menu = Menu.FIRST;
                         }
                         else if(menuInput.equals("2")) {
@@ -113,14 +139,20 @@ public class AgentProxy implements Runnable{
                         }
 
                     }
+                    //Auction house display menu
+                    //Get all auction houses and display them in a menu list
                     else if(menu.equals(Menu.SECOND)) {
-                        for(int i=0;i<connectedAHs.size();i++) {
-                            int menuEntry = i+1;
-                            System.out.println(menuEntry +". Auction House " + menuEntry);
+                        if (connectedAHs.size()>0) {
+                            for (int i = 0; i < connectedAHs.size(); i++) {
+                                int menuEntry = i + 1;
+                                System.out.println(menuEntry + ". Auction House " + menuEntry);
+                            }
                         }
+                        else System.out.println("No available Auction Houses");
                         int previousEntry = connectedAHs.size()+1;
                         System.out.println(previousEntry + ". Previous Menu");
                         String menuInput = scanner.nextLine();
+                        //go back to previous menu
                         if(menuInput.equals("" + previousEntry)) {
                             menu = Menu.FIRST;
                         }
@@ -129,44 +161,64 @@ public class AgentProxy implements Runnable{
                                 int menuEntry = i + 1;
                                 String auctionHouseOption = "" + menuEntry;
                                 if (menuInput.equals(auctionHouseOption)) {
-                                    //set auction house
+                                    selectedAH = connectedAHs.get(i);
+                                    items = selectedAH.sendAHMsg("items");
+                                    System.out.println(items);
+                                    //set auction house that user chose
                                     menu = Menu.THIRD;
                                 }
                             }
                         }
                     }
+                    //display third page menu, which is the item menu of a specific AH
                     else if(menu.equals(Menu.THIRD)) {
                         System.out.println("Bid on an item using format: itemID bidAmount");
                         //get items on sale from selected auction house
-                        for(int i=0;i<3;i++){//for(int i=0;i<items.size();i++) {
-                            int menuEntry = i+1;
-                            //System.out.println(menuEntry + ". " +items[1].Info);
+                        String[] itemsOnSale = items.split(";");
+                        List<String> itemStrings = new ArrayList<>();
+                        for(String s:itemsOnSale) {
+                            String itemInfo = "";
+                            String[] splitItemInfo = s.split(":");
+                            itemInfo = "Item Name: " + splitItemInfo[0] + ", Item Description: " + splitItemInfo[1]
+                                    + ", Current Bid: " + splitItemInfo[2] + ", Minimum Bid: " + splitItemInfo[3]
+                                    + ", Time Left: " + splitItemInfo[4];
+                            itemStrings.add(itemInfo);
                         }
-                        int previousEntry = 3+1;//items.size() + 1;
+                        for(int i=0;i<itemStrings.size();i++){
+                            int menuEntry = i+1;
+                            System.out.println(menuEntry + ". " +itemStrings.get(i));
+                        }
+                        int previousEntry = itemStrings.size()+1;
                         System.out.println(previousEntry + ". Previous Menu");
                         String menuInput = scanner.nextLine();
+                        //go back to previous menu
                         if(menuInput.equals("" + previousEntry)) {
                             menu = Menu.SECOND;
                         }
                         else {
-                            for(int i=0;i<3;i++){//for(int i=0;i<items.size();i++) {
+                            for(int i=0;i<itemStrings.size();i++){
                                 int menuEntry = i + 1;
                                 String itemSelected = "" + menuEntry;
                                 if (menuInput.equals(itemSelected)) {
                                     //set item to bid on
                                     String[] words = menuInput.split(" ");
-                                    try{
-                                        int bid = Integer.parseInt(words[1]);
-                                        //send bid to auction house
-                                    } catch (NumberFormatException e) {
-                                        System.out.println("Incorrect bid amount input");
+                                    if (words.length==2) {
+                                        try {
+                                            double bid = Double.parseDouble(words[1]);
+                                            //send bid to auction house
+                                            selectedAH.sendAHMsg("trybid:"+itemSelected+":"+bid);
+
+                                        } catch (NumberFormatException e) {
+                                            System.out.println("Incorrect bid amount input");
+                                        }
                                     }
+                                    else System.out.println("Incorrect input");
                                 }
                             }
                         }
                     }
 
-
+                    /*
                     String input = scanner.nextLine();
 
                     // Find Keywords & Process input
@@ -208,7 +260,7 @@ public class AgentProxy implements Runnable{
 //
 //                    else{
 //                        System.out.println("unable to find keywords...");
-//                    }
+//                    }*/
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -236,13 +288,33 @@ public class AgentProxy implements Runnable{
                 while(agentToBankSocket.isConnected()){
                     // Read income message
                     String message = in.readLine();
+                    //new auction house connected
+                    if(message.contains("newAH ")) {
+                        String[] ahs = message.split(" ");
+                        for (int i=1;i<ahs.length;i++) {
+                            String address = ahs[i].split(";")[0];
+                            int port = Integer.parseInt(ahs[i].split(";")[1]);
+                            System.out.println("Trying to Connect to " + address + " w/ port " + port);
+                            Socket newConnectedServer = new Socket(address, port);
+                            AgentAHProxy ahProxy = new AgentAHProxy(newConnectedServer);
+                            if(i==(connectedAHs.size()+1)) {
+                                connectedAHs.add(ahProxy);
+                            }
+                            //connectedAHs.add(newConnectedServer);
 
+                        }
+                    }
+                    if(message.contains("Available Balance:")) {
+                        balanceMessage = message;
+                        messageParsed = true;
+                    }
+                    if(message.contains("accountnumber:")) {
+                        bankAccountNumber = message.split(":")[1];
+                    }
                     // Figure out who it's from
 
                     // Do logic, based on who it's from
 
-
-                    System.out.println(message);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);

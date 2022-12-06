@@ -14,6 +14,7 @@ public class Agent {
     public Agent() throws IOException {
         // Create Agent Proxy for Communication to Bank & AHs
         AgentProxy agentProxy = new AgentProxy(new Socket("localhost", 4999));
+        agentProxy.run();
     }
 
     public static void main(String[] args) throws IOException {

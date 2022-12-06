@@ -22,8 +22,10 @@ public class AuctionHouse {
     private List<Item> inventoryList = new ArrayList<Item>();
     private static List<Item> itemsOnSale = new ArrayList<Item>();
     private int itemID = 0;
+    private AuctionHouse auctionHouse;
 
     public AuctionHouse() throws IOException {
+        auctionHouse = this;
 
         // Gets company name
         System.out.println("Company Name:");
@@ -67,7 +69,7 @@ public class AuctionHouse {
                 while(!serverSocket.isClosed()){
                     try {
                         Socket clientSocket = serverSocket.accept();
-                        Thread thread = new Thread(new AuctionHouseProxy(clientSocket));
+                        Thread thread = new Thread(new AuctionHouseProxy(clientSocket,auctionHouse ));
                         thread.start();
                     } catch (IOException e) {
                         throw new RuntimeException(e);

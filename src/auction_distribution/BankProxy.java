@@ -18,6 +18,7 @@ public class BankProxy implements Runnable{
     private BankAccount bankAccount;
     private boolean isAuctionHouse = false;
     private static ArrayList<BankAccount> bankAccounts = new ArrayList<>();
+    private static ArrayList<BankProxy> bankProxies = new ArrayList<>();
 
     public BankProxy(Socket clientSocket, String accountNumber) throws IOException {
         // Socket connection w/ Client
@@ -28,29 +29,43 @@ public class BankProxy implements Runnable{
 
         // Get Initial Client Data (format: name;clientType;address;port)
         String clientInfo = bufferedReader.readLine();
+        String balanceInfo = bufferedReader.readLine();
+
 
         // Parse initial client data based what client connected (AH or Agent)
         if(clientInfo.toLowerCase().contains("server")){  // Client = AH
             System.out.println("New <AuctionHouse> Connected w/ Server details: " + clientInfo);
             this.bankAccount = new BankAccount(accountNumber, 0);
             this.isAuctionHouse = true;
-
             // Add AuctionHouse to list of active AuctionHouses
             String auctionHouseServer = clientInfo.split("server;")[1];
             addAuctionHouse(auctionHouseServer);
-
+            bankProxies.add(this);
             bankAccounts.add(this.bankAccount);
+            //send agents new AH info
+            for(BankProxy bankProxy: bankProxies) {
+                if (!bankProxy.isAuctionHouse) {
+                    bankProxy.printWriter.println("newAH"+getActiveAuctionHouses());
+                    bankProxy.printWriter.flush();
+                }
+            }
 
         }else{  // Client = Agent
             System.out.println("New <Agent> Connected w/ details: " + clientInfo);
 
             this.bankAccount = new BankAccount(accountNumber, 1000);
+            bankProxies.add(this);
             bankAccounts.add(this.bankAccount);
-
+            if(!isAuctionHouse) {
+                this.bankAccount.setStartingBalance(Double.parseDouble(balanceInfo.split(":")[1]));
+            }
+            //send clients their account number
+            printWriter.println("accountnumber:" + bankAccount.getAccountNumber());
             // Send client list of active AuctionHouses
             printWriter.println(getActiveAuctionHouses());
             printWriter.flush();
         }
+
     }
 
     /**
@@ -116,7 +131,7 @@ public class BankProxy implements Runnable{
                             printWriter.flush();
                         }
                         else {
-                            int totalBalance = bankAccount.getBalance()+bankAccount.getLockedBalance();
+                            double totalBalance = bankAccount.getBalance()+bankAccount.getLockedBalance();
                             printWriter.println("Available Balance: " + bankAccount.getBalance() + ", "+
                                     "Total Balance: " + totalBalance);
                             printWriter.flush();
@@ -146,8 +161,8 @@ public class BankProxy implements Runnable{
                     }
 
                     // Send message back.
-                    printWriter.println("Thanks for responding.");
-                    printWriter.flush();
+                    //printWriter.println("Thanks for responding.");
+                    //printWriter.flush();
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);

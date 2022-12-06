@@ -2,8 +2,8 @@ package auction_distribution;
 
 public class BankAccount {
     private String accountNumber;
-    private int balance;
-    private int lockedBalance=0;
+    private double balance;
+    private double lockedBalance=0;
 
     //Constructor
     public BankAccount(String accountNumber, int startBalance) {
@@ -24,25 +24,29 @@ public class BankAccount {
     }
 
     //send a payment to specified account
-    public synchronized void sendPayment(int amount,BankAccount account) {
+    public synchronized void sendPayment(double amount,BankAccount account) {
         this.lockedBalance -= amount;
         account.receivePayment(amount);
     }
 
     //add to balance when receiving a payment
-    public synchronized void receivePayment(int amount) {
+    public synchronized void receivePayment(double amount) {
         this.balance+=amount;
+    }
+
+    public synchronized void setStartingBalance(double amount) {
+        this.balance = amount;
     }
 
     public String getAccountNumber() {
         return accountNumber;
     }
 
-    public int getBalance() {
+    public double getBalance() {
         return balance;
     }
 
-    public int getLockedBalance() {
+    public double getLockedBalance() {
         return lockedBalance;
     }
 }
