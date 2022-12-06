@@ -116,7 +116,6 @@ public class AgentProxy implements Runnable{
                         System.out.println("2. View Available Auction Houses");
                         System.out.println("3. Exit");
                         String menuInput = scanner.nextLine();
-                        System.out.println(menuInput);
                         if(menuInput.equals("1")) {
                             //send message to bank to retrieve balance
                             sendBankMsg("balance");
