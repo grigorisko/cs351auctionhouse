@@ -123,11 +123,8 @@ public class AgentProxy implements Runnable{
                             messageParsed = false;
                             //wait for message to be parsed by listener
                             while(!messageParsed) {
-
+                                Thread.sleep(50);
                             }
-                            //print out balance
-                            System.out.println(balanceMessage);
-                            menu = Menu.FIRST;
                         }
                         else if(menuInput.equals("2")) {
                             menu = Menu.SECOND;
@@ -262,7 +259,7 @@ public class AgentProxy implements Runnable{
 //                        System.out.println("unable to find keywords...");
 //                    }*/
                 }
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             } finally {
                 out.close();
@@ -306,6 +303,8 @@ public class AgentProxy implements Runnable{
                     }
                     if(message.contains("Available Balance:")) {
                         balanceMessage = message;
+                        //print out balance
+                        System.out.println(balanceMessage);
                         messageParsed = true;
                     }
                     if(message.contains("accountnumber:")) {
