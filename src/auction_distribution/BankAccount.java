@@ -6,13 +6,13 @@ public class BankAccount {
     private double lockedBalance=0;
 
     //Constructor
-    public BankAccount(String accountNumber, int startBalance) {
+    public BankAccount(String accountNumber, double startBalance) {
         this.accountNumber = accountNumber;
         this.balance = startBalance;
     }
 
     //check if balance is enough for bid
-    public synchronized boolean checkBalance(int bidAmount) {
+    public synchronized boolean checkBalance(double bidAmount) {
         if(bidAmount<=this.balance) {
             this.balance-=bidAmount;
             this.lockedBalance+=bidAmount;

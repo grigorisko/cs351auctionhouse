@@ -29,7 +29,6 @@ public class BankProxy implements Runnable{
 
         // Get Initial Client Data (format: name;clientType;address;port)
         String clientInfo = bufferedReader.readLine();
-        String balanceInfo = bufferedReader.readLine();
 
 
         // Parse initial client data based what client connected (AH or Agent)
@@ -52,12 +51,14 @@ public class BankProxy implements Runnable{
 
         }else{  // Client = Agent
             System.out.println("New <Agent> Connected w/ details: " + clientInfo);
+            //String balanceInfo = bufferedReader.readLine();
+
 
             this.bankAccount = new BankAccount(accountNumber, 1000);
             bankProxies.add(this);
             bankAccounts.add(this.bankAccount);
             if(!isAuctionHouse) {
-                this.bankAccount.setStartingBalance(Double.parseDouble(balanceInfo.split(":")[1]));
+                //this.bankAccount.setStartingBalance(Double.parseDouble(balanceInfo.split(":")[1]));
             }
             //send clients their account number
             printWriter.println("accountnumber:" + bankAccount.getAccountNumber());
@@ -110,7 +111,7 @@ public class BankProxy implements Runnable{
                         String[] words = clientMessage.split(";");
                         for (BankAccount bankAccount:bankAccounts) {
                             if (words[1].equals(bankAccount.getAccountNumber())) {
-                                if(bankAccount.checkBalance(Integer.parseInt(words[2]))) {
+                                if(bankAccount.checkBalance(Double.parseDouble(words[2]))) {
                                     //accept bid
                                     //lock balance
                                     printWriter.println("Bid accepted");
@@ -133,7 +134,7 @@ public class BankProxy implements Runnable{
                         else {
                             double totalBalance = bankAccount.getBalance()+bankAccount.getLockedBalance();
                             printWriter.println("Available Balance: " + bankAccount.getBalance() + ", "+
-                                    "Total Balance: " + totalBalance);
+                                    "Total Balance: " + totalBalance +"\n");
                             printWriter.flush();
 
                         }
@@ -151,7 +152,7 @@ public class BankProxy implements Runnable{
                         String[] words = clientMessage.split(";");
                         for(BankAccount bankAccount:bankAccounts) {
                             if(words[1].equals(bankAccount.getAccountNumber())) {
-                                bankAccount.sendPayment(Integer.parseInt(words[2]), bankAccount);
+                                bankAccount.sendPayment(Double.parseDouble(words[2]), bankAccount);
                             }
                         }
                     }
