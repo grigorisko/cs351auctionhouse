@@ -6,7 +6,7 @@ public class Item {
     private int itemID;
     private double currentBid;
     private int timeLeft;
-    private int currentWinner;
+    private AuctionHouseProxy currentWinner;
     private double minimumBid;
     private double defaultPrice;
 
@@ -49,7 +49,7 @@ public class Item {
         return timeLeft;
     }
 
-    public int getCurrentWinner() {
+    public AuctionHouseProxy getCurrentWinner() {
         return currentWinner;
     }
 
@@ -65,8 +65,12 @@ public class Item {
         this.defaultPrice = defaultPrice;
     }
 
+    public void setCurrentWinner(AuctionHouseProxy currentWinner){
+        this.currentWinner = currentWinner;
+    }
+
     public void setNewBidPrice(double newBidPrice){
         currentBid = newBidPrice;
-        minimumBid = currentBid + minimumBid;
+        minimumBid = currentBid + 1;
     }
 }

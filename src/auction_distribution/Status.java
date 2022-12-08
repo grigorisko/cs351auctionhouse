@@ -1,8 +1,8 @@
 package auction_distribution;
 
 public enum Status {
-    ACCEPTANCE,
-    REJECTION,
+    ACCEPTED,
+    REJECTED,
     OUTBID,
     WINNER
 }

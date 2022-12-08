@@ -199,6 +199,7 @@ public class AgentProxy implements Runnable{
                     else if(menu.equals(Menu.THIRD)) {
                         System.out.println("Bid on an item using format: Row BidAmount");
                         //get items on sale from selected auction house
+                        items = selectedAH.sendAHMsg("items");
                         String[] itemsOnSale = items.split(";");
                         List<String> itemStrings = new ArrayList<>();
                         for(String s:itemsOnSale) {

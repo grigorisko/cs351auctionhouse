@@ -24,7 +24,15 @@ public class AuctionHouseProxy implements Runnable{
     }
 
     /**
-     * Listen for Incoming Messages
+     * Sends a message from Auction House to Agent
+     */
+    public void sendAgentMsg(String message){
+        printerWriter.println(message);
+        printerWriter.flush();
+    }
+
+    /**
+     * Listen for Incoming Messages from an Agent
      */
     @Override
     public void run() {
@@ -61,27 +69,27 @@ public class AuctionHouseProxy implements Runnable{
                         int itemID = Integer.parseInt(bidRequest[1]);
                         double bid = Double.parseDouble(bidRequest[2]);
                         System.out.println("Processing New $" + bid + " bid on ItemID " + itemID);
-                        boolean bidValid;  // true = accepted client bid
+//                        boolean bidValid;  // true = accepted client bid
                         switch(itemID){
-                            case 1:
-                                bidValid = auctionHouse.processBid_ItemID_0(bid);
+                            case 0:
+                                auctionHouse.processBid_ItemID_0(this, bid);
                                 break;
-                            case 2:
-                                bidValid = auctionHouse.processBid_ItemID_1(bid);
+                            case 1:
+                                auctionHouse.processBid_ItemID_1(this, bid);
                                 break;
                             default:
-                                bidValid = auctionHouse.processBid_ItemID_2(bid);
+                                auctionHouse.processBid_ItemID_2(this, bid);
                                 break;
                         }
 
-                        if(bidValid){
-                            System.out.println("Bid Accepted.");
-                            printerWriter.println("Bid Accepted.");
-                        }else{
-                            System.out.println("Bid Rejected.");
-                            printerWriter.println("Bid Rejected.");
-                        }
-                        printerWriter.flush();
+//                        if(bidValid){
+//                            System.out.println("Bid Accepted.");
+//                            printerWriter.println("Bid Accepted.");
+//                        }else{
+//                            System.out.println("Bid Rejected.");
+//                            printerWriter.println("Bid Rejected.");
+//                        }
+//                        printerWriter.flush();
                     }
 
                     // DO LOGIC STUFF

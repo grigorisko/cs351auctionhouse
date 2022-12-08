@@ -198,10 +198,10 @@ public class AuctionHouse {
 
     /**
      * Processes a new Bid Amount for Item 1. Synchronized, so only 1 bid
-     *  quantity can be checked at a time.
-     * @return true if bid accepted.
+     *  quantity can be checked at a time. At the end, method tells bidding
+     *  agent if they were accepted or rejected.
      */
-    public synchronized boolean processBid_ItemID_0(double bidOffer){
+    public synchronized void processBid_ItemID_0(AuctionHouseProxy agent, double bidOffer){
         // Check if item 1 exists. Grab it if it does.
         Item item = null;
         for(Item product : getItemsOnSale()){
@@ -210,24 +210,25 @@ public class AuctionHouse {
                 break;
             }
         }
-        if(item == null){
-            return false;
-        }
 
         // Check if new bid offer is greater than current bid price
-        if(bidOffer >= (item.getCurrentBid() + item.getMinimumBid())){
+        if(item != null && bidOffer >= item.getMinimumBid()){
+            System.out.println("New Bid Winner: $" + bidOffer);
             item.setNewBidPrice(bidOffer);
-            return true;
+            item.setCurrentWinner(agent);
+            System.out.println("Item " + item.getItemName() + " with bid " + item.getCurrentBid());
+            agent.sendAgentMsg("" + Status.ACCEPTED);
+        }else{
+            agent.sendAgentMsg("" + Status.REJECTED);
         }
-        return false;
     }
 
     /**
-     * Processes a new Bid Amount for Item 2. Synchronized, so only 1 bid
-     *  quantity can be checked at a time.
-     * @return true if bid accepted.
+     * Processes a new Bid Amount for Item 1. Synchronized, so only 1 bid
+     *  quantity can be checked at a time. At the end, method tells bidding
+     *  agent if they were accepted or rejected.
      */
-    public synchronized boolean processBid_ItemID_1(double bidOffer){
+    public synchronized void processBid_ItemID_1(AuctionHouseProxy agent, double bidOffer){
         // Check if item 1 exists. Grab it if it does.
         Item item = null;
         for(Item product : getItemsOnSale()){
@@ -236,28 +237,23 @@ public class AuctionHouse {
                 break;
             }
         }
-        if(item == null){
-            return false;
-        }
 
         // Check if new bid offer is greater than current bid price
-        if(bidOffer >= (item.getCurrentBid() + item.getMinimumBid())){
+        if(item != null && bidOffer >= item.getMinimumBid()){
             item.setNewBidPrice(bidOffer);
-            return true;
+            item.setCurrentWinner(agent);
+            agent.sendAgentMsg("" + Status.ACCEPTED);
+        }else{
+            agent.sendAgentMsg("" + Status.REJECTED);
         }
-        return false;
     }
 
     /**
-     * Processes a new Bid Amount for Item 3. Synchronized, so only 1 bid
-     *  quantity can be checked at a time.
-     * @return true if bid accepted.
+     * Processes a new Bid Amount for Item 1. Synchronized, so only 1 bid
+     *  quantity can be checked at a time. At the end, method tells bidding
+     *  agent if they were accepted or rejected.
      */
-    public synchronized boolean processBid_ItemID_2(double bidOffer){
-        // TODO: Should this method be in wrapped in a new Thread?...so that
-        //  AuctionHouseProxy can run multiple methods inside of
-        //  AuctionHouse.java, and we can process two diff. bids for
-        //  two diff. items inside of AuctionHouse.java.
+    public synchronized void processBid_ItemID_2(AuctionHouseProxy agent, double bidOffer){
         // Check if item 1 exists. Grab it if it does.
         Item item = null;
         for(Item product : getItemsOnSale()){
@@ -266,16 +262,15 @@ public class AuctionHouse {
                 break;
             }
         }
-        if(item == null){
-            return false;
-        }
 
         // Check if new bid offer is greater than current bid price
-        if(bidOffer >= (item.getCurrentBid() + item.getMinimumBid())){
+        if(item != null && bidOffer >= item.getMinimumBid()){
             item.setNewBidPrice(bidOffer);
-            return true;
+            item.setCurrentWinner(agent);
+            agent.sendAgentMsg("" + Status.ACCEPTED);
+        }else{
+            agent.sendAgentMsg("" + Status.REJECTED);
         }
-        return false;
     }
 
 
