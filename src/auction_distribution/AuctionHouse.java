@@ -137,7 +137,14 @@ public class AuctionHouse {
 
     private Item sellNewItem() {
         Random rand = new Random();
-        Item itemToSell = inventoryList.get(rand.nextInt(inventoryList.size()));
+        Item itemToSell = null; 
+        while (true) {
+            Item tempItem = inventoryList.get(rand.nextInt(inventoryList.size()));
+            if (!itemsOnSale.contains(tempItem)) {
+                itemToSell = tempItem;
+            }
+            break;
+        }
         itemToSell.setItemID(itemID);
         itemID++;
         return itemToSell;
@@ -165,7 +172,9 @@ public class AuctionHouse {
                 inventoryList.add(newItem);
             }
             for (int i=0;i<3;i++) {
+
                 itemsOnSale.add(sellNewItem());
+
             }
 
         } catch (IOException e) {

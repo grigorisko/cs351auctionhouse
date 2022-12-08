@@ -251,49 +251,6 @@ public class AgentProxy implements Runnable{
                         }
                     }
 
-                    /*
-                    String input = scanner.nextLine();
-
-                    // Find Keywords & Process input
-                    // bid 3000 to ah1\
-                    if (input.contains("Set bank balance ")) {
-                        int firstSpace = input.indexOf(" ");
-                        int secSpace = input.indexOf(" ", firstSpace + 1);
-                        int thirdSpace = input.indexOf(" ", secSpace + 1);
-                        if (firstSpace != -1) {
-                            setBankBalance(Integer.parseInt(input.substring(thirdSpace + 1)));
-                        }
-                    } else if (input.equals("What is my bank balance?")) {
-                        printBalance(getBankBalance());
-                    } else if (input.contains("Bid")) { // Format "bid [item] for [x amount] at [ah?]"
-                        int firstSpace = input.indexOf(" ");
-                        int secondSpace = input.indexOf(" ", firstSpace + 1);
-                        int thirdSpace = input.indexOf(" ", secondSpace + 1);
-                        int forthSpace = input.indexOf(" ", thirdSpace + 1);
-                        int fifthSpace = input.indexOf(" ", forthSpace + 1);
-                        String item = input.substring(firstSpace + 1, secondSpace);
-                        //System.out.println(input.substring(thirdSpace + 1, forthSpace));
-                        int itemPrice = Integer.parseInt(input.substring(thirdSpace + 1, forthSpace));
-                        String chosenAuctionHouse = input.substring(fifthSpace + 1);
-                        System.out.println("Item is: " + item);
-                        System.out.println("Item's price: " + itemPrice);
-                        System.out.println("Chosen ah: " + chosenAuctionHouse);
-                    } else if (input.equals("What are the available items?")) { // Does not work. Maybe try to intialize AHProxy to use it for calling
-                        System.out.println(1);
-                        chosenList = AuctionHouse.getItemsOnSale();
-                        printList(chosenList);
-                    }
-//                    if(input.contains("bid")){
-//                        System.out.println("You want to bid...");
-//
-//                    }
-//                    if(input.contains("balance")){
-//                        System.out.println("You want to check balance...");
-//                    }
-//
-//                    else{
-//                        System.out.println("unable to find keywords...");
-//                    }*/
                 }
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
