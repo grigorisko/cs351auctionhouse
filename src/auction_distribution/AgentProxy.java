@@ -197,7 +197,7 @@ public class AgentProxy implements Runnable{
                     }
                     //display third page menu, which is the item menu of a specific AH
                     else if(menu.equals(Menu.THIRD)) {
-                        System.out.println("Bid on an item using format: ItemID BidAmount");
+                        System.out.println("Bid on an item using format: Row BidAmount");
                         //get items on sale from selected auction house
                         String[] itemsOnSale = items.split(";");
                         List<String> itemStrings = new ArrayList<>();
@@ -222,6 +222,7 @@ public class AgentProxy implements Runnable{
                         }
                         else {
                             // Displays all items in an AH to bid
+                            // TODO: We don't need multiple iterations. (set print in else after if-statement to see what i'm talking about)
                             if(menuInput.split(" ").length == 2){
                                 String desiredRow = menuInput.split(" ")[0];
                                 String bidPrice = menuInput.split(" ")[1];
@@ -234,11 +235,12 @@ public class AgentProxy implements Runnable{
                                         try {
                                             // This giant line of code just grabs itemID from our
                                             // item description "Item Name: ~, Item ID: ~,...."
-                                            int itemID = Integer.parseInt(itemStrings.get(Integer.parseInt(desiredRow)).split(", ")[1].split("Item ID: ")[1]);
+                                            int itemID = Integer.parseInt(itemStrings.get(Integer.parseInt(desiredRow)-1).split(", ")[1].split("Item ID: ")[1]);
                                             double bid = Double.parseDouble(bidPrice);
                                             //send bid to auction house
                                             System.out.println("Bid Sent.");
-                                            selectedAH.sendAHMsg("trybid:"+itemID+":"+bid);
+                                            String bidStatus = selectedAH.sendAHMsg("trybid:"+itemID+":"+bid);
+                                            System.out.println(bidStatus);
                                         } catch (NumberFormatException e) {
                                             System.out.println("Incorrect bid amount input");
                                         }

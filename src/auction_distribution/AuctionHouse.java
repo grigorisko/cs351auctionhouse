@@ -198,6 +198,7 @@ public class AuctionHouse {
         for(Item product : getItemsOnSale()){
             if(product.getItemID() == 0){
                 item = product;
+                break;
             }
         }
         if(item == null){
@@ -223,6 +224,7 @@ public class AuctionHouse {
         for(Item product : getItemsOnSale()){
             if(product.getItemID() == 1){
                 item = product;
+                break;
             }
         }
         if(item == null){
@@ -252,6 +254,7 @@ public class AuctionHouse {
         for(Item product : getItemsOnSale()){
             if(product.getItemID() == 2){
                 item = product;
+                break;
             }
         }
         if(item == null){

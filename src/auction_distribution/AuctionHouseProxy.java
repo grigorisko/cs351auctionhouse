@@ -75,8 +75,10 @@ public class AuctionHouseProxy implements Runnable{
                         }
 
                         if(bidValid){
+                            System.out.println("Bid Accepted.");
                             printerWriter.println("Bid Accepted.");
                         }else{
+                            System.out.println("Bid Rejected.");
                             printerWriter.println("Bid Rejected.");
                         }
                         printerWriter.flush();
