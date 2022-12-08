@@ -222,7 +222,6 @@ public class AgentProxy implements Runnable{
                         }
                         else {
                             // Displays all items in an AH to bid
-                            // TODO: We don't need multiple iterations. (set print in else after if-statement to see what i'm talking about)
                             if(menuInput.split(" ").length == 2){
                                 String desiredRow = menuInput.split(" ")[0];
                                 String bidPrice = menuInput.split(" ")[1];
