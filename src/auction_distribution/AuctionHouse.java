@@ -15,11 +15,14 @@ import java.util.*;
  */
 public class AuctionHouse {
     private ServerSocket serverSocket;
-    private Socket socket;
+    private Socket bankAHSocket;
     private BufferedReader bufferedReader;
     private PrintWriter printWriter;
+    // Our Company Name
     private String companyName;
+    // Holds list of all items in our inventory.txt file
     private List<Item> inventoryList = new ArrayList<Item>();
+    // Holds top 3 items that are up for auction.
     private static List<Item> itemsOnSale = new ArrayList<Item>();
     private int itemID = 0;
     private AuctionHouse auctionHouse;
@@ -27,23 +30,36 @@ public class AuctionHouse {
     public AuctionHouse() throws IOException {
         auctionHouse = this;
 
-        // Gets company name
-        System.out.println("Company Name:");
-        Scanner scanner = new Scanner(System.in);
-        companyName = scanner.nextLine();
+//        // Gets company name
+//        System.out.println("Company Name:");
+//        Scanner scanner = new Scanner(System.in);
+//        companyName = scanner.nextLine();
 
         // Create Bank-AuctionHouse Connection
-        socket = new Socket("localhost", 4999);
-        bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        printWriter = new PrintWriter(socket.getOutputStream());
+        bankAHSocket = new Socket("localhost", 4999);
+        bufferedReader = new BufferedReader(new InputStreamReader(bankAHSocket.getInputStream()));
+        printWriter = new PrintWriter(bankAHSocket.getOutputStream());
 
         // Create AuctionHouse Server
         int random = new Random().nextInt(1000,5000);
         serverSocket = new ServerSocket(random);  // TODO: change this to be actual address & port
 
-        // Send Server Data to bank
-        int serverPort = serverSocket.getLocalPort();
-        sendBankMsg("server;localhost;"+serverPort);
+        //Send Server Data to bank. Infinite Loop until Connection Successful :)
+        String bankConnectionMsg = "";
+        do{
+            // Gets company name
+            System.out.println("Company Name:");
+            Scanner scanner = new Scanner(System.in);
+            companyName = scanner.nextLine();
+
+            // Get Server Address & Port
+            int serverPort = serverSocket.getLocalPort();
+            sendBankMsg(companyName + ";server;localhost;"+serverPort);
+
+            // Check to see if Bank Accepted our Name, Address, & Port
+            bankConnectionMsg = bufferedReader.readLine();
+            System.out.println(bankConnectionMsg);
+        }while (!bankConnectionMsg.equals("Bank Connection Successful."));
 
         initializeInventory();
         System.out.println(itemsOnSale.toString());
@@ -54,7 +70,7 @@ public class AuctionHouse {
      * @param message
      */
     private void sendBankMsg(String message){
-        printWriter.println(companyName + ";" + message);
+        printWriter.println(message);
         printWriter.flush();
     }
 
@@ -88,7 +104,7 @@ public class AuctionHouse {
             public void run() {
                 while(true){
                     try {
-                        while(socket.isConnected()){
+                        while(bankAHSocket.isConnected()){
                             String message = bufferedReader.readLine();
                             System.out.println(message);
                         }
@@ -102,7 +118,7 @@ public class AuctionHouse {
     }
 
     /**
-     * Sends a message, when we type something into Console.
+     * Sends a message to bank, when we type something into Console.
      */
     private void sendConsoleInput(){
         new Thread(new Runnable() {
@@ -110,7 +126,7 @@ public class AuctionHouse {
             public void run() {
                 Scanner scanner = new Scanner(System.in);
 
-                while(socket.isConnected()){
+                while(bankAHSocket.isConnected()){
                     String message = scanner.nextLine();
                     printWriter.println(companyName + ": " + message);
                     printWriter.flush();
@@ -169,6 +185,85 @@ public class AuctionHouse {
 
     public List<Item> getInventoryList(){
         return inventoryList;
+    }
+
+    /**
+     * Processes a new Bid Amount for Item 1. Synchronized, so only 1 bid
+     *  quantity can be checked at a time.
+     * @return true if bid accepted.
+     */
+    public synchronized boolean processBid_ItemID_0(double bidOffer){
+        // Check if item 1 exists. Grab it if it does.
+        Item item = null;
+        for(Item product : getItemsOnSale()){
+            if(product.getItemID() == 0){
+                item = product;
+            }
+        }
+        if(item == null){
+            return false;
+        }
+
+        // Check if new bid offer is greater than current bid price
+        if(bidOffer >= (item.getCurrentBid() + item.getMinimumBid())){
+            item.setNewBidPrice(bidOffer);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Processes a new Bid Amount for Item 2. Synchronized, so only 1 bid
+     *  quantity can be checked at a time.
+     * @return true if bid accepted.
+     */
+    public synchronized boolean processBid_ItemID_1(double bidOffer){
+        // Check if item 1 exists. Grab it if it does.
+        Item item = null;
+        for(Item product : getItemsOnSale()){
+            if(product.getItemID() == 1){
+                item = product;
+            }
+        }
+        if(item == null){
+            return false;
+        }
+
+        // Check if new bid offer is greater than current bid price
+        if(bidOffer >= (item.getCurrentBid() + item.getMinimumBid())){
+            item.setNewBidPrice(bidOffer);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Processes a new Bid Amount for Item 3. Synchronized, so only 1 bid
+     *  quantity can be checked at a time.
+     * @return true if bid accepted.
+     */
+    public synchronized boolean processBid_ItemID_2(double bidOffer){
+        // TODO: Should this method be in wrapped in a new Thread?...so that
+        //  AuctionHouseProxy can run multiple methods inside of
+        //  AuctionHouse.java, and we can process two diff. bids for
+        //  two diff. items inside of AuctionHouse.java.
+        // Check if item 1 exists. Grab it if it does.
+        Item item = null;
+        for(Item product : getItemsOnSale()){
+            if(product.getItemID() == 2){
+                item = product;
+            }
+        }
+        if(item == null){
+            return false;
+        }
+
+        // Check if new bid offer is greater than current bid price
+        if(bidOffer >= (item.getCurrentBid() + item.getMinimumBid())){
+            item.setNewBidPrice(bidOffer);
+            return true;
+        }
+        return false;
     }
 
 

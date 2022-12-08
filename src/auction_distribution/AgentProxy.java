@@ -5,10 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class AgentProxy implements Runnable{
     private Socket agentToBankSocket;
@@ -23,7 +20,8 @@ public class AgentProxy implements Runnable{
     private String bankAccountNumber;
     private String clientName;
     private List<Item> chosenList;
-    private ArrayList<AgentAHProxy> connectedAHs; //proxy list of AHs
+//    private ArrayList<AgentAHProxy> connectedAHs_Original; //proxy list of AHs
+    private HashMap<String, AgentAHProxy> connectedAHs;
     private AgentAHProxy selectedAH;
     private boolean messageParsed = true; //boolean to wait for message parsing before displaying in console
 
@@ -62,7 +60,8 @@ public class AgentProxy implements Runnable{
 
 
         // Get List of Active Auction Houses from Bank
-        connectedAHs = new ArrayList<>();
+//        connectedAHs = new ArrayList<>();
+        connectedAHs = new HashMap<>();
         // Get bank account number
         bankAccountNumber = in.readLine().split(":")[1];
         String[] activeAHs = in.readLine().strip().split(" ");
@@ -70,14 +69,17 @@ public class AgentProxy implements Runnable{
         System.out.println("Active Auction Houses = " + Arrays.toString(activeAHs));
         // Connect to ALL Active Auction Houses
         // check that there are auction houses
-        if(activeAHs.length>1) {
+        if(activeAHs.length > 0) {
             for (String ahServer : activeAHs) {
-                String address = ahServer.split(";")[0];
-                int port = Integer.parseInt(ahServer.split(";")[1]);
+                String serverName = ahServer.split(";")[0];
+                String address = ahServer.split(";")[1];
+                int port = Integer.parseInt(ahServer.split(";")[2]);
                 System.out.println("Trying to Connect to " + address + " w/ port " + port);
                 Socket newConnectedServer = new Socket(address, port);
                 AgentAHProxy ahProxy = new AgentAHProxy(newConnectedServer);
-                connectedAHs.add(ahProxy);
+
+//                connectedAHs.add(ahProxy);
+                connectedAHs.put(serverName, ahProxy);
                 //connectedAHs.add(newConnectedServer);
 
             }
@@ -88,6 +90,18 @@ public class AgentProxy implements Runnable{
         consoleInput();
     }
 
+
+    private synchronized String[] getListOfAHs(){
+        String[] list = new String[connectedAHs.size()];
+
+        int i = 0;
+        for(String serverName: connectedAHs.keySet()){
+            list[i] = serverName;
+            i++;
+        }
+
+        return list;
+    }
 
     private void sendBankMsg(String message) {
         out.println(message);
@@ -139,9 +153,10 @@ public class AgentProxy implements Runnable{
                     //Get all auction houses and display them in a menu list
                     else if(menu.equals(Menu.SECOND)) {
                         if (connectedAHs.size()>0) {
-                            for (int i = 0; i < connectedAHs.size(); i++) {
-                                int menuEntry = i + 1;
-                                System.out.println(menuEntry + ". Auction House " + menuEntry);
+                            int i = 1;
+                            for(String ahName : getListOfAHs()){
+                                System.out.println(i + ". " + ahName);
+                                i++;
                             }
                         }
                         else System.out.println("No available Auction Houses");
@@ -153,31 +168,45 @@ public class AgentProxy implements Runnable{
                             menu = Menu.FIRST;
                         }
                         else {
-                            for(int i=0;i<connectedAHs.size();i++) {
+//                            for(int i=0;i<connectedAHs_Hash.size();i++) {
+//                                int menuEntry = i + 1;
+//                                String auctionHouseOption = "" + menuEntry;
+//                                if (menuInput.equals(auctionHouseOption)) {
+//                                    selectedAH = connectedAHs.get(i);  // TODO: Fix this.
+//                                    items = selectedAH.sendAHMsg("items");
+//                                    System.out.println(items);
+//                                    //set auction house that user chose
+//                                    menu = Menu.THIRD;
+//                                }
+//                            }
+                            // Grabs & stores all AH items for sale.
+                            int i = 0;
+                            for(AgentAHProxy ahProxy : connectedAHs.values()){
                                 int menuEntry = i + 1;
                                 String auctionHouseOption = "" + menuEntry;
-                                if (menuInput.equals(auctionHouseOption)) {
-                                    selectedAH = connectedAHs.get(i);
+                                if(menuInput.equals(auctionHouseOption)){
+                                    selectedAH = ahProxy;
                                     items = selectedAH.sendAHMsg("items");
-                                    System.out.println(items);
+//                                    System.out.println(items);
                                     //set auction house that user chose
                                     menu = Menu.THIRD;
                                 }
+                                i++;
                             }
                         }
                     }
                     //display third page menu, which is the item menu of a specific AH
                     else if(menu.equals(Menu.THIRD)) {
-                        System.out.println("Bid on an item using format: itemID bidAmount");
+                        System.out.println("Bid on an item using format: ItemID BidAmount");
                         //get items on sale from selected auction house
                         String[] itemsOnSale = items.split(";");
                         List<String> itemStrings = new ArrayList<>();
                         for(String s:itemsOnSale) {
                             String itemInfo = "";
                             String[] splitItemInfo = s.split(":");
-                            itemInfo = "Item Name: " + splitItemInfo[0] + ", Item Description: " + splitItemInfo[1]
-                                    + ", Current Bid: " + splitItemInfo[2] + ", Minimum Bid: " + splitItemInfo[3]
-                                    + ", Time Left: " + splitItemInfo[4];
+                            itemInfo = "Item Name: " + splitItemInfo[0] + ", Item ID: " + splitItemInfo[1] + ", Item Description: " + splitItemInfo[2]
+                                    + ", Current Bid: " + splitItemInfo[3] + ", Minimum Bid: " + splitItemInfo[4]
+                                    + ", Time Left: " + splitItemInfo[5];
                             itemStrings.add(itemInfo);
                         }
                         for(int i=0;i<itemStrings.size();i++){
@@ -192,24 +221,31 @@ public class AgentProxy implements Runnable{
                             menu = Menu.SECOND;
                         }
                         else {
-                            for(int i=0;i<itemStrings.size();i++){
-                                int menuEntry = i + 1;
-                                String itemSelected = "" + menuEntry;
-                                if (menuInput.equals(itemSelected)) {
-                                    //set item to bid on
-                                    String[] words = menuInput.split(" ");
-                                    if (words.length==2) {
+                            // Displays all items in an AH to bid
+                            if(menuInput.split(" ").length == 2){
+                                String desiredRow = menuInput.split(" ")[0];
+                                String bidPrice = menuInput.split(" ")[1];
+                                for(int i=0;i<itemStrings.size();i++){
+                                    int menuEntry = i + 1;
+                                    String itemSelected = "" + menuEntry;
+                                    if (desiredRow.equals(itemSelected)) {
+                                        //set item to bid on
+                                        String[] words = menuInput.split(" ");
                                         try {
-                                            double bid = Double.parseDouble(words[1]);
+                                            // This giant line of code just grabs itemID from our
+                                            // item description "Item Name: ~, Item ID: ~,...."
+                                            int itemID = Integer.parseInt(itemStrings.get(Integer.parseInt(desiredRow)).split(", ")[1].split("Item ID: ")[1]);
+                                            double bid = Double.parseDouble(bidPrice);
                                             //send bid to auction house
-                                            selectedAH.sendAHMsg("trybid:"+itemSelected+":"+bid);
-
+                                            System.out.println("Bid Sent.");
+                                            selectedAH.sendAHMsg("trybid:"+itemID+":"+bid);
                                         } catch (NumberFormatException e) {
                                             System.out.println("Incorrect bid amount input");
                                         }
                                     }
-                                    else System.out.println("Incorrect input");
                                 }
+                            }else{
+                                System.out.println("Incorrect input");
                             }
                         }
                     }
@@ -274,7 +310,7 @@ public class AgentProxy implements Runnable{
 
 
     /**
-     * Listen for Incoming Messages (Bank or Auction Houses)
+     * Listen for Incoming Messages From Bank ONLY
      */
     @Override
     public void run() {
@@ -288,13 +324,15 @@ public class AgentProxy implements Runnable{
                     if(message.contains("newAH ")) {
                         String[] ahs = message.split(" ");
                         for (int i=1;i<ahs.length;i++) {
-                            String address = ahs[i].split(";")[0];
-                            int port = Integer.parseInt(ahs[i].split(";")[1]);
+                            String ahName = ahs[i].split(";")[0];
+                            String address = ahs[i].split(";")[1];
+                            int port = Integer.parseInt(ahs[i].split(";")[2]);
                             System.out.println("Trying to Connect to " + address + " w/ port " + port);
                             Socket newConnectedServer = new Socket(address, port);
                             AgentAHProxy ahProxy = new AgentAHProxy(newConnectedServer);
                             if(i==(connectedAHs.size()+1)) {
-                                connectedAHs.add(ahProxy);
+//                                connectedAHs.add(ahProxy);
+                                connectedAHs.put(ahName, ahProxy);
                             }
                             //connectedAHs.add(newConnectedServer);
 

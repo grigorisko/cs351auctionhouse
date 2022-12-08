@@ -37,8 +37,9 @@ public class BankProxy implements Runnable{
             this.bankAccount = new BankAccount(accountNumber, 0);
             this.isAuctionHouse = true;
             // Add AuctionHouse to list of active AuctionHouses
+            String companyName = clientInfo.split(";")[0];
             String auctionHouseServer = clientInfo.split("server;")[1];
-            addAuctionHouse(auctionHouseServer);
+            addAuctionHouse(companyName + ";" +auctionHouseServer);
             bankProxies.add(this);
             bankAccounts.add(this.bankAccount);
             //send agents new AH info
@@ -66,6 +67,9 @@ public class BankProxy implements Runnable{
             printWriter.println(getActiveAuctionHouses());
             printWriter.flush();
         }
+
+        printWriter.println("Bank Connection Successful.");
+        printWriter.flush();
 
     }
 

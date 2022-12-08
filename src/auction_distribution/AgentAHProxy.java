@@ -33,7 +33,7 @@ public class AgentAHProxy implements Runnable{
 
 
     /**
-     * Listen for Incoming Messages
+     * Listen for Incoming Messages from Auction House
      */
     @Override
     public void run() {
@@ -43,6 +43,7 @@ public class AgentAHProxy implements Runnable{
                 while(agentToAHSocket.isConnected()){
                     // Read income message
                     String message = in.readLine();
+                    System.out.println(message);
 
                     //System.out.println(message);
                 }

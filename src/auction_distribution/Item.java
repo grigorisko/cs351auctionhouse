@@ -64,4 +64,9 @@ public class Item {
     public void setDefaultPrice(double defaultPrice) {
         this.defaultPrice = defaultPrice;
     }
+
+    public void setNewBidPrice(double newBidPrice){
+        currentBid = newBidPrice;
+        minimumBid = currentBid + minimumBid;
+    }
 }
