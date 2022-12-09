@@ -26,6 +26,13 @@ public class AuctionHouse {
     private static List<Item> itemsOnSale = new ArrayList<Item>();
     private int itemID = 0;
     private AuctionHouse auctionHouse;
+    //checks for bank communication
+    private boolean balanceChecked = false;
+    private boolean bidAccepted = false;
+    //check for finalizing item sale
+    private boolean processingBid = false;
+    //account number
+    private String bankAccount;
 
     public AuctionHouse() throws IOException {
         auctionHouse = this;
@@ -106,6 +113,21 @@ public class AuctionHouse {
                     try {
                         while(bankAHSocket.isConnected()){
                             String message = bufferedReader.readLine();
+                            //bank confirmed bid
+                            if(message.equals("Bid accepted")) {
+                                balanceChecked = true;
+                                bidAccepted = true;
+                            }
+                            //bank declined bid
+                            else if(message.equals("Insufficient funds")) {
+                                balanceChecked = true;
+                                bidAccepted = false;
+                            }
+                            //bank sending us our account number
+                            else if(message.contains("accountNumber:"))
+                            {
+                                bankAccount = message.split(":")[1];
+                            }
                             System.out.println(message);
                         }
                     } catch (IOException e) {
@@ -142,8 +164,8 @@ public class AuctionHouse {
             Item tempItem = inventoryList.get(rand.nextInt(inventoryList.size()));
             if (!itemsOnSale.contains(tempItem)) {
                 itemToSell = tempItem;
+                break;
             }
-            break;
         }
         itemToSell.setItemID(itemID);
         itemID++;
@@ -168,7 +190,7 @@ public class AuctionHouse {
                         description += words[i] + " ";
                     }
                 }
-                Item newItem = new Item(itemName,description);
+                Item newItem = new Item(itemName,description,this);
                 inventoryList.add(newItem);
             }
             for (int i=0;i<3;i++) {
@@ -201,8 +223,9 @@ public class AuctionHouse {
      *  quantity can be checked at a time. At the end, method tells bidding
      *  agent if they were accepted or rejected.
      */
-    public synchronized void processBid_ItemID_0(AuctionHouseProxy agent, double bidOffer){
+    public synchronized void processBid_ItemID_0(AuctionHouseProxy agent, double bidOffer, String bankAccount) throws InterruptedException {
         // Check if item 1 exists. Grab it if it does.
+        processingBid = true;
         Item item = null;
         for(Item product : getItemsOnSale()){
             if(product.getItemID() == 0){
@@ -212,15 +235,45 @@ public class AuctionHouse {
         }
 
         // Check if new bid offer is greater than current bid price
-        if(item != null && bidOffer >= item.getMinimumBid()){
-            System.out.println("New Bid Winner: $" + bidOffer);
-            item.setNewBidPrice(bidOffer);
-            item.setCurrentWinner(agent);
-            System.out.println("Item " + item.getItemName() + " with bid " + item.getCurrentBid());
-            agent.sendAgentMsg("" + Status.ACCEPTED);
+        if(item != null && bidOffer >= item.getMinimumBid() && (item.getTimeLeft()>0 || !item.isBidStarted())){
+            //ask bank if bidder has enough balance
+            sendBankMsg("balance;"+bankAccount+";"+bidOffer);
+            balanceChecked = false;
+            bidAccepted = false;
+            while(!balanceChecked) {
+                Thread.sleep(50);
+            }
+            if(bidAccepted) {
+                //if no previous bid, accept
+                if(item.getCurrentWinner()==null) {
+                    System.out.println("New Bid Winner: $" + bidOffer);
+                    item.setNewBidPrice(bidOffer);
+                    item.setCurrentWinner(agent);
+                    item.setItemSold(false);
+                    System.out.println("Item " + item.getItemName() + " with bid " + item.getCurrentBid());
+                    agent.sendAgentMsg("" + Status.ACCEPTED);
+                }
+                //if previous bid, check that bidder is different
+                else if (!item.getCurrentWinner().equals(agent)) {
+                    System.out.println("New Bid Winner: $" + bidOffer);
+                    item.setNewBidPrice(bidOffer);
+                    item.setCurrentWinner(agent);
+                    item.setItemSold(false);
+                    System.out.println("Item " + item.getItemName() + " with bid " + item.getCurrentBid());
+                    agent.sendAgentMsg("" + Status.ACCEPTED);
+                }
+                //reject
+                else {
+                    agent.sendAgentMsg("" + Status.REJECTED);
+                }
+            }
+            else {
+                agent.sendAgentMsg("" + Status.REJECTED);
+            }
         }else{
             agent.sendAgentMsg("" + Status.REJECTED);
         }
+        processingBid = false;
     }
 
     /**
@@ -228,7 +281,7 @@ public class AuctionHouse {
      *  quantity can be checked at a time. At the end, method tells bidding
      *  agent if they were accepted or rejected.
      */
-    public synchronized void processBid_ItemID_1(AuctionHouseProxy agent, double bidOffer){
+    public synchronized void processBid_ItemID_1(AuctionHouseProxy agent, double bidOffer, String bankAccount){
         // Check if item 1 exists. Grab it if it does.
         Item item = null;
         for(Item product : getItemsOnSale()){
@@ -253,7 +306,7 @@ public class AuctionHouse {
      *  quantity can be checked at a time. At the end, method tells bidding
      *  agent if they were accepted or rejected.
      */
-    public synchronized void processBid_ItemID_2(AuctionHouseProxy agent, double bidOffer){
+    public synchronized void processBid_ItemID_2(AuctionHouseProxy agent, double bidOffer, String bankAccount){
         // Check if item 1 exists. Grab it if it does.
         Item item = null;
         for(Item product : getItemsOnSale()){
@@ -270,6 +323,17 @@ public class AuctionHouse {
             agent.sendAgentMsg("" + Status.ACCEPTED);
         }else{
             agent.sendAgentMsg("" + Status.REJECTED);
+        }
+    }
+
+    public void finalizeBid(Item item) throws InterruptedException {
+        while(processingBid) {
+            Thread.sleep(50);
+        }
+        if(item.getTimeLeft()<=0) {
+            item.getCurrentWinner().sendAgentMsg("finalize;"+this.bankAccount+";"+item.getCurrentBid());
+            itemsOnSale.remove(item);
+            itemsOnSale.add(sellNewItem());
         }
     }
 

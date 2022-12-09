@@ -13,11 +13,15 @@ public class Agent {
 
     public Agent() throws IOException {
         // Create Agent Proxy for Communication to Bank & AHs
-        AgentProxy agentProxy = new AgentProxy(new Socket("localhost", 4999));
+        AgentProxy agentProxy = new AgentProxy(new Socket("localhost", 4999), this);
         agentProxy.run();
     }
 
     public static void main(String[] args) throws IOException {
         Agent agent = new Agent();
+    }
+
+    public static void exit() {
+        System.exit(0);
     }
 }

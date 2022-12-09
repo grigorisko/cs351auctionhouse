@@ -52,14 +52,14 @@ public class BankProxy implements Runnable{
 
         }else{  // Client = Agent
             System.out.println("New <Agent> Connected w/ details: " + clientInfo);
-            //String balanceInfo = bufferedReader.readLine();
+            String balanceInfo = bufferedReader.readLine();
 
 
             this.bankAccount = new BankAccount(accountNumber, 1000);
             bankProxies.add(this);
             bankAccounts.add(this.bankAccount);
             if(!isAuctionHouse) {
-                //this.bankAccount.setStartingBalance(Double.parseDouble(balanceInfo.split(":")[1]));
+                this.bankAccount.setStartingBalance(Double.parseDouble(balanceInfo.split(":")[1]));
             }
             //send clients their account number
             printWriter.println("accountnumber:" + bankAccount.getAccountNumber());
@@ -70,6 +70,10 @@ public class BankProxy implements Runnable{
 
         printWriter.println("Bank Connection Successful.");
         printWriter.flush();
+
+        if(isAuctionHouse) {
+            printWriter.println("accountNumber:"+bankAccount.getAccountNumber());
+        }
 
     }
 
@@ -110,8 +114,9 @@ public class BankProxy implements Runnable{
 
                     // DO LOGIC STUFF
                     //receive message from auction house in format
-                    //balance;id;bidAmount
+                    //balance;accountNumber;bidAmount
                     if(clientMessage.contains("balance;") && this.isAuctionHouse) {
+                        System.out.println(clientMessage);
                         String[] words = clientMessage.split(";");
                         for (BankAccount bankAccount:bankAccounts) {
                             if (words[1].equals(bankAccount.getAccountNumber())) {
@@ -153,10 +158,12 @@ public class BankProxy implements Runnable{
                     //finalize;auctionhouseid;amount
                     //received from agent
                     else if(clientMessage.contains("finalize;")) {
+                        System.out.println(clientMessage);
                         String[] words = clientMessage.split(";");
                         for(BankAccount bankAccount:bankAccounts) {
                             if(words[1].equals(bankAccount.getAccountNumber())) {
-                                bankAccount.sendPayment(Double.parseDouble(words[2]), bankAccount);
+                                System.out.println("hello");
+                                this.bankAccount.sendPayment(Double.parseDouble(words[2]), bankAccount);
                             }
                         }
                     }

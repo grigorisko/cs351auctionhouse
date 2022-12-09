@@ -45,7 +45,7 @@ public class AuctionHouseProxy implements Runnable{
                     //return list of items
                     if(clientMessage.equals("items")) {
                         List<Item> itemsOnSale = auctionHouse.getItemsOnSale();
-                        String itemMsg = "";
+                        String itemMsg = "Items/";
                         for(Item i:itemsOnSale) {
                             itemMsg+=i.getItemName();
                             itemMsg+= ":";
@@ -68,17 +68,18 @@ public class AuctionHouseProxy implements Runnable{
                         String[] bidRequest = clientMessage.split(":");
                         int itemID = Integer.parseInt(bidRequest[1]);
                         double bid = Double.parseDouble(bidRequest[2]);
+                        String bankAccount = bidRequest[3];
                         System.out.println("Processing New $" + bid + " bid on ItemID " + itemID);
 //                        boolean bidValid;  // true = accepted client bid
                         switch(itemID){
                             case 0:
-                                auctionHouse.processBid_ItemID_0(this, bid);
+                                auctionHouse.processBid_ItemID_0(this, bid, bankAccount);
                                 break;
                             case 1:
-                                auctionHouse.processBid_ItemID_1(this, bid);
+                                auctionHouse.processBid_ItemID_1(this, bid, bankAccount);
                                 break;
                             default:
-                                auctionHouse.processBid_ItemID_2(this, bid);
+                                auctionHouse.processBid_ItemID_2(this, bid, bankAccount);
                                 break;
                         }
 
@@ -100,6 +101,8 @@ public class AuctionHouseProxy implements Runnable{
                     //printerWriter.flush();
                 }
             } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }

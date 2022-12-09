@@ -14,9 +14,20 @@ public class AgentAHProxy implements Runnable{
     private Socket agentToAHSocket;
     private BufferedReader in;
     private PrintWriter out;
+    private String returnMessage;
+    private AgentProxy agentProxy;
+    private boolean ahMessageParsed;
 
-    public AgentAHProxy(Socket auctionHouseSocket) throws IOException {
+    private static ArrayList<AgentAHProxy> agentAHProxies = new ArrayList<>();
+
+    private String ahName;
+
+
+    public AgentAHProxy(Socket auctionHouseSocket, AgentProxy agentProxy, String name) throws IOException {
+        this.agentProxy = agentProxy;
         this.agentToAHSocket = auctionHouseSocket;
+        this.ahName = name;
+        agentProxy.addAuctionHouse(this,ahName);
         in = new BufferedReader(new InputStreamReader(agentToAHSocket.getInputStream()));
         out = new PrintWriter(agentToAHSocket.getOutputStream(), true);
     }
@@ -24,11 +35,9 @@ public class AgentAHProxy implements Runnable{
     /**
      * Send a message to the auction house
      */
-    public String sendAHMsg(String message) throws IOException {
+    public void sendAHMsg(String message) throws IOException {
         out.println(message);
         out.flush();
-        String response = in.readLine();
-        return response;
     }
 
 
@@ -43,8 +52,26 @@ public class AgentAHProxy implements Runnable{
                 while(agentToAHSocket.isConnected()){
                     // Read income message
                     String message = in.readLine();
-                    System.out.println(message);
-
+                    //System.out.println(message);
+                    if(message.contains("Items/")) {
+                        returnMessage = message.split("/")[1];
+                        ahMessageParsed = true;
+                    }
+                    else if(message.contains("ACCEPTED")) {
+                        returnMessage = message;
+                        ahMessageParsed = true;
+                    }
+                    else if(message.contains("REJECTED")) {
+                        returnMessage = message;
+                        ahMessageParsed = true;
+                    }
+                    //receive message from AH that bid was won
+                    //format finalize;ahBankAccount;amount
+                    else if(message.contains("finalize")) {
+                        System.out.println(message);
+                        agentProxy.sendBankMsg(message);
+                        agentProxy.decreaseActiveBids();
+                    }
                     //System.out.println(message);
                 }
             } catch (IOException e) {
@@ -55,4 +82,19 @@ public class AgentAHProxy implements Runnable{
 
     }
 
+    public Socket getAgentToAHSocket() {
+        return agentToAHSocket;
+    }
+
+    public void setAhMessageParsed(boolean ahMessageParsed) {
+        this.ahMessageParsed = ahMessageParsed;
+    }
+
+    public boolean isAhMessageParsed() {
+        return ahMessageParsed;
+    }
+
+    public String getReturnMessage() {
+        return returnMessage;
+    }
 }
