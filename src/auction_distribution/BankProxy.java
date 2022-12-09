@@ -39,9 +39,13 @@ public class BankProxy implements Runnable{
             // Add AuctionHouse to list of active AuctionHouses
             String companyName = clientInfo.split(";")[0];
             String auctionHouseServer = clientInfo.split("server;")[1];
+            String port = auctionHouseServer.split(";")[1];
+            String IPAddress = clientSocket.getRemoteSocketAddress().toString().split("/")[1].split(":")[0];
+            auctionHouseServer = IPAddress + ";" + port;
             addAuctionHouse(companyName + ";" +auctionHouseServer);
             bankProxies.add(this);
             bankAccounts.add(this.bankAccount);
+            System.out.println(auctionHouseServer);
             //send agents new AH info
             for(BankProxy bankProxy: bankProxies) {
                 if (!bankProxy.isAuctionHouse) {
