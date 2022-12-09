@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Scanner;
 
 public class Agent {
     private Socket socket;
@@ -12,8 +13,11 @@ public class Agent {
     private String username;
 
     public Agent() throws IOException {
+        System.out.println("Enter Bank Address");
+        Scanner scanner = new Scanner(System.in);
+        String bankAddress = scanner.nextLine();
         // Create Agent Proxy for Communication to Bank & AHs
-        AgentProxy agentProxy = new AgentProxy(new Socket("localhost", 4999), this);
+        AgentProxy agentProxy = new AgentProxy(new Socket(bankAddress, 4999), this);
         agentProxy.run();
     }
 

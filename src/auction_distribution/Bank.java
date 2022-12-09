@@ -1,10 +1,10 @@
 package auction_distribution;
 
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.Random;
+
 
 /**
  * Is a Server.
@@ -14,7 +14,9 @@ public class Bank {
     private ArrayList<String> bankAccounts = new ArrayList<>();
 
     public Bank(int port) throws IOException {
-        serverSocket = new ServerSocket(port);
+        serverSocket = new ServerSocket(port, 1, InetAddress.getLocalHost());
+        System.out.println(serverSocket.getInetAddress());
+        System.out.println(InetAddress.getLocalHost().getHostAddress());
     }
 
 

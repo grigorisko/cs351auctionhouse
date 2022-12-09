@@ -41,9 +41,11 @@ public class AuctionHouse {
 //        System.out.println("Company Name:");
 //        Scanner scanner = new Scanner(System.in);
 //        companyName = scanner.nextLine();
-
+        System.out.println("Enter Bank Address");
+        Scanner scanner = new Scanner(System.in);
+        String bankAddress = scanner.nextLine();
         // Create Bank-AuctionHouse Connection
-        bankAHSocket = new Socket("localhost", 4999);
+        bankAHSocket = new Socket(bankAddress, 4999);
         bufferedReader = new BufferedReader(new InputStreamReader(bankAHSocket.getInputStream()));
         printWriter = new PrintWriter(bankAHSocket.getOutputStream());
 
@@ -56,7 +58,7 @@ public class AuctionHouse {
         do{
             // Gets company name
             System.out.println("Company Name:");
-            Scanner scanner = new Scanner(System.in);
+            //Scanner scanner = new Scanner(System.in);
             companyName = scanner.nextLine();
 
             // Get Server Address & Port
