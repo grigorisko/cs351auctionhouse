@@ -65,6 +65,12 @@ public class AgentAHProxy implements Runnable{
                         returnMessage = message;
                         ahMessageParsed = true;
                     }
+                    else if(message.contains("OUTBID")) {
+                        System.out.println(message);
+                    }
+                    else if(message.contains("WINNER")) {
+                        System.out.println(message);
+                    }
                     //receive message from AH that bid was won
                     //format finalize;ahBankAccount;amount
                     else if(message.contains("finalize")) {

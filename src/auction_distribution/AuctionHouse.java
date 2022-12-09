@@ -256,6 +256,10 @@ public class AuctionHouse {
                 //if previous bid, check that bidder is different
                 else if (!item.getCurrentWinner().equals(agent)) {
                     System.out.println("New Bid Winner: $" + bidOffer);
+                    item.getCurrentWinner().sendAgentMsg(""+ Status.OUTBID + " on item: "+
+                                                        item.getItemName()+ " itemID: "+
+                                                        item.getItemID()+ " from Auction House: "+
+                                                        companyName + " New Bid: " + bidOffer);
                     item.setNewBidPrice(bidOffer);
                     item.setCurrentWinner(agent);
                     item.setItemSold(false);
@@ -326,11 +330,15 @@ public class AuctionHouse {
         }
     }
 
+    //Method to finalize bid and inform the winner
     public void finalizeBid(Item item) throws InterruptedException {
         while(processingBid) {
             Thread.sleep(50);
         }
         if(item.getTimeLeft()<=0) {
+            item.getCurrentWinner().sendAgentMsg(""+Status.WINNER+", Won Item: "+item.getItemName()+
+                                                 ", ItemID: "+item.getItemID()+", From Auction House: "+
+                                                companyName);
             item.getCurrentWinner().sendAgentMsg("finalize;"+this.bankAccount+";"+item.getCurrentBid());
             itemsOnSale.remove(item);
             itemsOnSale.add(sellNewItem());
