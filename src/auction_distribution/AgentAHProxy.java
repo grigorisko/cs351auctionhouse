@@ -64,6 +64,10 @@ public class AgentAHProxy implements Runnable{
                     else if(message.contains("REJECTED")) {
                         returnMessage = message;
                         ahMessageParsed = true;
+                    }else if(message.contains("" + Status.OUTBID)){
+                        System.out.println(message);
+                    }else if(message.contains("" + Status.WINNER)){
+                        System.out.println(message);
                     }
                     else if(message.contains("OUTBID")) {
                         System.out.println(message);

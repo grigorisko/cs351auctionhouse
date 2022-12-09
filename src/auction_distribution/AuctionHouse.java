@@ -58,7 +58,7 @@ public class AuctionHouse {
         do{
             // Gets company name
             System.out.println("Company Name:");
-            //Scanner scanner = new Scanner(System.in);
+            scanner = new Scanner(System.in);
             companyName = scanner.nextLine();
 
             // Get Server Address & Port
@@ -212,7 +212,7 @@ public class AuctionHouse {
         auctionHouse.sendConsoleInput();
         auctionHouse.startServer();
     }
-    public static List<Item> getItemsOnSale() {
+    public List<Item> getItemsOnSale() {
         return itemsOnSale;
     }
 
@@ -221,16 +221,16 @@ public class AuctionHouse {
     }
 
     /**
-     * Processes a new Bid Amount for Item 1. Synchronized, so only 1 bid
+     * Processes a new Bid Amount for an Item. Synchronized, so only 1 bid
      *  quantity can be checked at a time. At the end, method tells bidding
      *  agent if they were accepted or rejected.
      */
-    public synchronized void processBid_ItemID_0(AuctionHouseProxy agent, double bidOffer, String bankAccount) throws InterruptedException {
-        // Check if item 1 exists. Grab it if it does.
+    public synchronized void processBid(AuctionHouseProxy agent, double bidOffer, String bankAccount, int itemID) throws InterruptedException {
+        // Check if item exists. Grab it if it does.
         processingBid = true;
         Item item = null;
         for(Item product : getItemsOnSale()){
-            if(product.getItemID() == 0){
+            if(product.getItemID() == itemID){
                 item = product;
                 break;
             }
@@ -256,7 +256,8 @@ public class AuctionHouse {
                     agent.sendAgentMsg("" + Status.ACCEPTED);
                 }
                 //if previous bid, check that bidder is different
-                else if (!item.getCurrentWinner().equals(agent)) {
+                else if (!item.getCurrentWinner().equals(agent) && !item.isSold()) {
+                    item.resetTimer();  // Reset Timer before time runs out
                     System.out.println("New Bid Winner: $" + bidOffer);
                     item.getCurrentWinner().sendAgentMsg(""+ Status.OUTBID + " on item: "+
                                                         item.getItemName()+ " itemID: "+
@@ -282,68 +283,37 @@ public class AuctionHouse {
         processingBid = false;
     }
 
-    /**
-     * Processes a new Bid Amount for Item 1. Synchronized, so only 1 bid
-     *  quantity can be checked at a time. At the end, method tells bidding
-     *  agent if they were accepted or rejected.
-     */
-    public synchronized void processBid_ItemID_1(AuctionHouseProxy agent, double bidOffer, String bankAccount){
-        // Check if item 1 exists. Grab it if it does.
-        Item item = null;
-        for(Item product : getItemsOnSale()){
-            if(product.getItemID() == 1){
-                item = product;
-                break;
-            }
-        }
-
-        // Check if new bid offer is greater than current bid price
-        if(item != null && bidOffer >= item.getMinimumBid()){
-            item.setNewBidPrice(bidOffer);
-            item.setCurrentWinner(agent);
-            agent.sendAgentMsg("" + Status.ACCEPTED);
-        }else{
-            agent.sendAgentMsg("" + Status.REJECTED);
-        }
-    }
-
-    /**
-     * Processes a new Bid Amount for Item 1. Synchronized, so only 1 bid
-     *  quantity can be checked at a time. At the end, method tells bidding
-     *  agent if they were accepted or rejected.
-     */
-    public synchronized void processBid_ItemID_2(AuctionHouseProxy agent, double bidOffer, String bankAccount){
-        // Check if item 1 exists. Grab it if it does.
-        Item item = null;
-        for(Item product : getItemsOnSale()){
-            if(product.getItemID() == 2){
-                item = product;
-                break;
-            }
-        }
-
-        // Check if new bid offer is greater than current bid price
-        if(item != null && bidOffer >= item.getMinimumBid()){
-            item.setNewBidPrice(bidOffer);
-            item.setCurrentWinner(agent);
-            agent.sendAgentMsg("" + Status.ACCEPTED);
-        }else{
-            agent.sendAgentMsg("" + Status.REJECTED);
-        }
-    }
-
-    //Method to finalize bid and inform the winner
     public void finalizeBid(Item item) throws InterruptedException {
         while(processingBid) {
             Thread.sleep(50);
         }
         if(item.getTimeLeft()<=0) {
+            System.out.println("Item Sold.");
             item.getCurrentWinner().sendAgentMsg(""+Status.WINNER+", Won Item: "+item.getItemName()+
                                                  ", ItemID: "+item.getItemID()+", From Auction House: "+
                                                 companyName);
             item.getCurrentWinner().sendAgentMsg("finalize;"+this.bankAccount+";"+item.getCurrentBid());
-            itemsOnSale.remove(item);
-            itemsOnSale.add(sellNewItem());
+            item.setDefaults(); // Sometimes reappears in menu, this removes previous bid prices.
+
+            System.out.println("Item: " + item.getItemName() + " is it in the list: " + itemsOnSale.contains(item));
+            itemsOnSale.remove(item);  // Removes from menu of top 3 items.
+            System.out.println("Item: " + item.getItemName() + " is it in the list: " + itemsOnSale.contains(item));
+
+            inventoryList.remove(item);  // Removes from inventory.
+            System.out.print("Updated Inventory List:");
+            for(Item thingy : inventoryList){
+                System.out.print(" " + thingy.getItemName());
+            }
+            System.out.println();
+
+            System.out.print("Updated itemOnSale List:");
+            for(Item thingy : itemsOnSale){
+                System.out.print(" " + thingy.getItemName());
+            }
+            System.out.println();
+            if(inventoryList.size() > 0){
+                itemsOnSale.add(sellNewItem());
+            }
         }
     }
 

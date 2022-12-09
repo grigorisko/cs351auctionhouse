@@ -1,6 +1,5 @@
 package auction_distribution;
 
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -16,7 +15,9 @@ public class Item{
     private boolean bidStarted;
     private boolean itemSold = false;
     private boolean resetTimer = false;
-    private int timer = 30;
+    private final int BIDDING_DURATION = 5; // how long bidding should last for (seconds)
+    private int timer = BIDDING_DURATION;
+    private Timer t = new Timer();
     private AuctionHouse auctionHouse;
 
     public Item(String itemName, String description, double defaultPrice, int itemId, AuctionHouse auctionHouse) {
@@ -72,8 +73,15 @@ public class Item{
         return defaultPrice;
     }
 
-    public void setDefaultPrice(double defaultPrice) {
-        this.defaultPrice = defaultPrice;
+    public void setDefaults() {
+        this.currentBid = 0;
+        this.minimumBid = 1;
+        this.bidStarted = false;
+        this.itemSold = false;
+        t = new Timer();
+//        this.timer = BIDDING_DURATION;
+//        this.resetTimer = true;
+        this.currentWinner = null;
     }
 
     public void setCurrentWinner(AuctionHouseProxy currentWinner){
@@ -84,44 +92,71 @@ public class Item{
         return bidStarted;
     }
 
+    public boolean isSold(){return itemSold;}
+
+    public void resetTimer(){this.resetTimer = true;}
+
     public void setItemSold(boolean itemSold) {
         this.itemSold = itemSold;
     }
 
     public void setNewBidPrice(double newBidPrice){
-        if(currentBid==defaultPrice) {
-            bidStarted = true;
-        }
-        else {
-            resetTimer = true;
-        }
-        currentBid = newBidPrice;
-        minimumBid = currentBid + 1;
-        //start 30 second timer and reset if needed, updates every 1 second
-        new Thread(() -> {
-            Item thisItem = this;
-            new Timer().schedule(new TimerTask() {
+        Item thisItem = this;
+        if(!itemSold){
+            currentBid = newBidPrice;
+            minimumBid = currentBid + 1;
+            //start 30 second timer and reset if needed, updates every 1 second
+            TimerTask tt = new TimerTask() {
                 @Override
                 public void run() {
+                    System.out.println("timer countdown: " + timer);
                     timer = timer-1;
                     if(resetTimer) {
-                        timer=30;
+                        timer = BIDDING_DURATION;
                         resetTimer=false;
                     }
-                    if (timer<0) {
-                        timer = 0;
-                    }
+//                if (timer<=0) {
+//                    timer = 0;
+//                }
                     timeLeft = timer;
-                    if (timeLeft==0 && !itemSold) {
+                    if (timeLeft<=0) {  // Removed: "&& !itemSold"
                         try {
-                            auctionHouse.finalizeBid(thisItem);
+                            t.cancel();  // Stops bid timer
                             itemSold=true;
+                            auctionHouse.finalizeBid(thisItem);
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         }
                     }
                 }
-            },0,1000);
-        }).start();
+            };
+            t.schedule(tt,0,1000);
+        }
+//        new Thread(() -> {
+//            Item thisItem = this;
+//            new Timer().schedule(new TimerTask() {
+//                @Override
+//                public void run() {
+//                    timer = timer-1;
+//                    System.out.println("Timer Running " + timer);
+//                    if(resetTimer) {
+//                        timer = BIDDING_DURATION;
+//                        resetTimer=false;
+//                    }
+//                    if (timer<0) {
+//                        timer = 0;
+//                    }
+//                    timeLeft = timer;
+//                    if (timeLeft==0 && !itemSold) {
+//                        try {
+//                            auctionHouse.finalizeBid(thisItem);
+//                            itemSold=true;
+//                        } catch (InterruptedException e) {
+//                            throw new RuntimeException(e);
+//                        }
+//                    }
+//                }
+//            },0,1000);
+//        }).start();
     }
 }

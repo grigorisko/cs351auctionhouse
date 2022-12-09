@@ -11,7 +11,6 @@ public class AgentProxy implements Runnable{
     private Socket agentToBankSocket;
     private BufferedReader in;
     private PrintWriter out;
-    private ArrayList<AgentProxy> clients;
     private int bankBalance;
     private int trueBalance;
 
@@ -20,7 +19,6 @@ public class AgentProxy implements Runnable{
     private String bankAccountNumber;
     private String clientName;
     private List<Item> chosenList;
-//    private ArrayList<AgentAHProxy> connectedAHs_Original; //proxy list of AHs
     private HashMap<String, AgentAHProxy> connectedAHs;
     private AgentAHProxy selectedAH;
     private boolean messageParsed = true; //boolean to wait for message parsing before displaying in console
@@ -29,16 +27,6 @@ public class AgentProxy implements Runnable{
     private String bidStatus;
     private boolean ahMessageParsed = false;
     private String ahMessage;
-
-    public AgentProxy(Socket agentSocket, ArrayList<AgentProxy> clients) throws IOException {
-        this.agentToBankSocket = agentSocket;
-        this.clients = clients;
-        in = new BufferedReader(new InputStreamReader(agentSocket.getInputStream()));
-        out = new PrintWriter(agentSocket.getOutputStream(), true);
-        this.bankBalance = 0;
-        this.trueBalance = 0;
-        System.out.println("New Bidder Connected.");
-    }
 
     public AgentProxy(Socket socket, Agent agent) throws IOException {
         this.agent = agent;
@@ -66,7 +54,6 @@ public class AgentProxy implements Runnable{
 
 
         // Get List of Active Auction Houses from Bank
-//        connectedAHs = new ArrayList<>();
         connectedAHs = new HashMap<>();
         // Get bank account number
         bankAccountNumber = in.readLine().split(":")[1];
@@ -85,11 +72,6 @@ public class AgentProxy implements Runnable{
                 //AgentAHProxy ahProxy = new AgentAHProxy(newConnectedServer, this);
                 Thread ahProxyThread = new Thread(new AgentAHProxy(newConnectedServer, this, serverName));
                 ahProxyThread.start();
-
-//                connectedAHs.add(ahProxy);
-                //connectedAHs.put(serverName, ahProxy);
-                //connectedAHs.add(newConnectedServer);
-
             }
         }
         // Start Independent Threads
@@ -187,17 +169,6 @@ public class AgentProxy implements Runnable{
                             menu = Menu.FIRST;
                         }
                         else {
-//                            for(int i=0;i<connectedAHs_Hash.size();i++) {
-//                                int menuEntry = i + 1;
-//                                String auctionHouseOption = "" + menuEntry;
-//                                if (menuInput.equals(auctionHouseOption)) {
-//                                    selectedAH = connectedAHs.get(i);  // TODO: Fix this.
-//                                    items = selectedAH.sendAHMsg("items");
-//                                    System.out.println(items);
-//                                    //set auction house that user chose
-//                                    menu = Menu.THIRD;
-//                                }
-//                            }
                             // Grabs & stores all AH items for sale.
                             int i = 0;
                             for(AgentAHProxy ahProxy : connectedAHs.values()){
@@ -205,14 +176,12 @@ public class AgentProxy implements Runnable{
                                 String auctionHouseOption = "" + menuEntry;
                                 if(menuInput.equals(auctionHouseOption)){
                                     selectedAH = ahProxy;
-                                    //items = selectedAH.sendAHMsg("items");
                                     selectedAH.setAhMessageParsed(false);
                                     selectedAH.sendAHMsg("items");
                                     while(!selectedAH.isAhMessageParsed()){
                                         Thread.sleep(50);
                                     }
                                     items = selectedAH.getReturnMessage();
-//                                    System.out.println(items);
                                     //set auction house that user chose
                                     menu = Menu.THIRD;
                                 }
@@ -231,6 +200,7 @@ public class AgentProxy implements Runnable{
                             Thread.sleep(50);
                         }
                         items = selectedAH.getReturnMessage();
+                        System.out.println("Return Item Message: " + items);
                         String[] itemsOnSale = items.split(";");
                         List<String> itemStrings = new ArrayList<>();
                         for(String s:itemsOnSale) {
@@ -331,14 +301,6 @@ public class AgentProxy implements Runnable{
                             //AgentAHProxy ahProxy = new AgentAHProxy(newConnectedServer, this);
                             Thread ahProxyThread = new Thread(new AgentAHProxy(newConnectedServer, this, ahName));
                             ahProxyThread.start();
-                            /*
-                            if(i==(connectedAHs.size()+1)) {
-//                                connectedAHs.add(ahProxy);
-                                connectedAHs.put(ahName, ahProxyThread);
-                            }
-                            */
-                            //connectedAHs.add(newConnectedServer);
-
                         }
                     }
                     if(message.contains("Available Balance:")) {
@@ -361,12 +323,6 @@ public class AgentProxy implements Runnable{
 
         }
 
-    }
-    // For testing purposes
-    public void outToAll(String msg) {
-        for (AgentProxy aClient : clients) {
-            aClient.out.println(msg);
-        }
     }
 
     public void setBankBalance(int bankBalance) {

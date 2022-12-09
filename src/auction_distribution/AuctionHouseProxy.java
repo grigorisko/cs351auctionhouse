@@ -45,6 +45,11 @@ public class AuctionHouseProxy implements Runnable{
                     //return list of items
                     if(clientMessage.equals("items")) {
                         List<Item> itemsOnSale = auctionHouse.getItemsOnSale();
+                        System.out.print("Pushing Items for Sale:");
+                        for(Item thingy: auctionHouse.getItemsOnSale()){
+                            System.out.print(" " + thingy.getItemName());
+                        }
+                        System.out.println();
                         String itemMsg = "Items/";
                         for(Item i:itemsOnSale) {
                             itemMsg+=i.getItemName();
@@ -70,35 +75,9 @@ public class AuctionHouseProxy implements Runnable{
                         double bid = Double.parseDouble(bidRequest[2]);
                         String bankAccount = bidRequest[3];
                         System.out.println("Processing New $" + bid + " bid on ItemID " + itemID);
-//                        boolean bidValid;  // true = accepted client bid
-                        switch(itemID){
-                            case 0:
-                                auctionHouse.processBid_ItemID_0(this, bid, bankAccount);
-                                break;
-                            case 1:
-                                auctionHouse.processBid_ItemID_1(this, bid, bankAccount);
-                                break;
-                            default:
-                                auctionHouse.processBid_ItemID_2(this, bid, bankAccount);
-                                break;
-                        }
 
-//                        if(bidValid){
-//                            System.out.println("Bid Accepted.");
-//                            printerWriter.println("Bid Accepted.");
-//                        }else{
-//                            System.out.println("Bid Rejected.");
-//                            printerWriter.println("Bid Rejected.");
-//                        }
-//                        printerWriter.flush();
+                        auctionHouse.processBid(this, bid, bankAccount, itemID);
                     }
-
-                    // DO LOGIC STUFF
-
-
-                    // Send message back.
-                    //printerWriter.println("Processing Bid.");
-                    //printerWriter.flush();
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
