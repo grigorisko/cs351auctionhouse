@@ -77,6 +77,7 @@ public class BankProxy implements Runnable{
 
         if(isAuctionHouse) {
             printWriter.println("accountNumber:"+bankAccount.getAccountNumber());
+            printWriter.flush();
         }
 
     }
@@ -88,6 +89,10 @@ public class BankProxy implements Runnable{
      */
     private synchronized void addAuctionHouse(String auctionHouse){
         activeAuctionHouses.add(auctionHouse);
+    }
+
+    private synchronized void removeAuctionHouse(String auctionHouse){
+        activeAuctionHouses.remove(auctionHouse);
     }
 
     /**
@@ -166,10 +171,39 @@ public class BankProxy implements Runnable{
                         String[] words = clientMessage.split(";");
                         for(BankAccount bankAccount:bankAccounts) {
                             if(words[1].equals(bankAccount.getAccountNumber())) {
-                                System.out.println("hello");
                                 this.bankAccount.sendPayment(Double.parseDouble(words[2]), bankAccount);
                             }
                         }
+                        //notify auction house about payment
+                        for(BankProxy bankProxy: bankProxies) {
+                            if(bankProxy.bankAccount.getAccountNumber().equals(words[1])) {
+                                bankProxy.printWriter.println("Received $" + Double.parseDouble(words[2]) + " payment");
+                                bankProxy.printWriter.flush();
+                            }
+                        }
+                    }
+                    //unblock agent balance when outbid
+                    else if(clientMessage.contains("unblock;")) {
+                        System.out.println(clientMessage);
+                        String[] words = clientMessage.split(";");
+                        for(BankAccount bankAccount:bankAccounts) {
+                            if(words[1].equals(bankAccount.getAccountNumber())) {
+                               bankAccount.unblockBalance(Double.parseDouble(words[2]));
+                            }
+                        }
+                    }
+                    //auction house deregistering
+                    else if(clientMessage.contains("exiting")) {
+                        System.out.println("Auction House " + clientMessage.split(" ")[0] + " exiting");
+                        //remove auction house from list
+                        for(String s: activeAuctionHouses) {
+                            if(s.contains(clientMessage.split(" ")[0])) {
+                                removeAuctionHouse(s);
+                                break;
+                            }
+                        }
+                        //remove this bankproxy
+                        bankProxies.remove(this);
                     }
                     else {
                         printWriter.println("Incorrect message");

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AuctionHouseProxy implements Runnable{
@@ -17,6 +18,8 @@ public class AuctionHouseProxy implements Runnable{
     public AuctionHouseProxy(Socket clientSocket, AuctionHouse auctionHouse) throws IOException {
         this.auctionHouse = auctionHouse;
         this.clientSocket = clientSocket;
+        //add to list of connected agents
+        auctionHouse.addClient(this);
         bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         printerWriter = new PrintWriter(clientSocket.getOutputStream());
 
@@ -86,5 +89,10 @@ public class AuctionHouseProxy implements Runnable{
             }
         }
 
+    }
+
+    //get the client socket
+    public Socket getClientSocket() {
+        return clientSocket;
     }
 }

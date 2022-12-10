@@ -10,6 +10,7 @@ public class Item{
     private double currentBid;
     private int timeLeft;
     private AuctionHouseProxy currentWinner;
+    private String currentWinnerAccount;
     private double minimumBid;
     private double defaultPrice;
     private boolean bidStarted;
@@ -100,6 +101,14 @@ public class Item{
         this.itemSold = itemSold;
     }
 
+    public String getCurrentWinnerAccount() {
+        return currentWinnerAccount;
+    }
+
+    public void setCurrentWinnerAccount(String currentWinnerAccount) {
+        this.currentWinnerAccount = currentWinnerAccount;
+    }
+
     public void setNewBidPrice(double newBidPrice){
         Item thisItem = this;
         if(!itemSold){
@@ -109,7 +118,8 @@ public class Item{
             TimerTask tt = new TimerTask() {
                 @Override
                 public void run() {
-                    System.out.println("timer countdown: " + timer);
+                    //this print prevented me from typing exit in console
+                    //System.out.println("timer countdown: " + timer);
                     timer = timer-1;
                     if(resetTimer) {
                         timer = BIDDING_DURATION;

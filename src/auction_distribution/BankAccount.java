@@ -23,6 +23,12 @@ public class BankAccount {
         }
     }
 
+    //unblock agent balance
+    public synchronized void unblockBalance(double unblockAmount) {
+        this.lockedBalance -= unblockAmount;
+        this.balance += unblockAmount;
+    }
+
     //send a payment to specified account
     public synchronized void sendPayment(double amount,BankAccount account) {
         this.lockedBalance -= amount;

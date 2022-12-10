@@ -33,6 +33,8 @@ public class AuctionHouse {
     private boolean processingBid = false;
     //account number
     private String bankAccount;
+    //static list of all connected agents
+    private static List<AuctionHouseProxy> connectedClients = new ArrayList<>();
 
     public AuctionHouse() throws IOException {
         auctionHouse = this;
@@ -152,8 +154,40 @@ public class AuctionHouse {
 
                 while(bankAHSocket.isConnected()){
                     String message = scanner.nextLine();
-                    printWriter.println(companyName + ": " + message);
-                    printWriter.flush();
+                    //exit logic
+                    if(message.equalsIgnoreCase("exit")) {
+                        boolean bidIsActive = false;
+                        //if an item has a timer running prevent exit
+                        for(Item item: getItemsOnSale()) {
+                            if (item.getTimeLeft()>0) {
+                                bidIsActive = true;
+                            }
+                        }
+                        if(bidIsActive) {
+                            System.out.println("Cannot exit while bid is active");
+                        }
+                        //else cleanup
+                        else {
+                            //message bank that we are exiting
+                            printWriter.println(companyName + " exiting");
+                            printWriter.flush();
+                            try {
+                                //close bank socket
+                                bankAHSocket.close();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            //notify agents that we are exiting
+                            for(AuctionHouseProxy auctionHouseProxy:connectedClients) {
+                                    auctionHouseProxy.sendAgentMsg(companyName+" exiting");
+                            }
+                            System.exit(0);
+                        }
+                    }
+                    else {
+                        printWriter.println(message);
+                        printWriter.flush();
+                    }
                 }
             }
         }).start();
@@ -251,6 +285,7 @@ public class AuctionHouse {
                     System.out.println("New Bid Winner: $" + bidOffer);
                     item.setNewBidPrice(bidOffer);
                     item.setCurrentWinner(agent);
+                    item.setCurrentWinnerAccount(bankAccount);
                     item.setItemSold(false);
                     System.out.println("Item " + item.getItemName() + " with bid " + item.getCurrentBid());
                     agent.sendAgentMsg("" + Status.ACCEPTED);
@@ -263,8 +298,11 @@ public class AuctionHouse {
                                                         item.getItemName()+ " itemID: "+
                                                         item.getItemID()+ " from Auction House: "+
                                                         companyName + " New Bid: " + bidOffer);
+                    //unblock old winners balance
+                    sendBankMsg("unblock;"+item.getCurrentWinnerAccount()+";"+item.getCurrentBid());
                     item.setNewBidPrice(bidOffer);
                     item.setCurrentWinner(agent);
+                    item.setCurrentWinnerAccount(bankAccount);
                     item.setItemSold(false);
                     System.out.println("Item " + item.getItemName() + " with bid " + item.getCurrentBid());
                     agent.sendAgentMsg("" + Status.ACCEPTED);
@@ -315,6 +353,11 @@ public class AuctionHouse {
                 itemsOnSale.add(sellNewItem());
             }
         }
+    }
+
+    //add a client to the list of connected clients
+    public void addClient(AuctionHouseProxy auctionHouseProxy) {
+        connectedClients.add(auctionHouseProxy);
     }
 
 

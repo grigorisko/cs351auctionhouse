@@ -223,40 +223,50 @@ public class AgentProxy implements Runnable{
                             menu = Menu.SECOND;
                         }
                         else {
-                            // Displays all items in an AH to bid
-                            if(menuInput.split(" ").length == 2){
-                                String desiredRow = menuInput.split(" ")[0];
-                                String bidPrice = menuInput.split(" ")[1];
-                                for(int i=0;i<itemStrings.size();i++){
-                                    int menuEntry = i + 1;
-                                    String itemSelected = "" + menuEntry;
-                                    if (desiredRow.equals(itemSelected)) {
-                                        //set item to bid on
-                                        String[] words = menuInput.split(" ");
-                                        try {
-                                            // This giant line of code just grabs itemID from our
-                                            // item description "Item Name: ~, Item ID: ~,...."
-                                            int itemID = Integer.parseInt(itemStrings.get(Integer.parseInt(desiredRow)-1).split(", ")[1].split("Item ID: ")[1]);
-                                            double bid = Double.parseDouble(bidPrice);
-                                            //send bid to auction house
-                                            System.out.println("Bid Sent.");
-                                            //String bidStatus = selectedAH.sendAHMsg("trybid:"+itemID+":"+bid+":"+bankAccountNumber);
-                                            selectedAH.setAhMessageParsed(false);
-                                            selectedAH.sendAHMsg("trybid:"+itemID+":"+bid+":"+bankAccountNumber);
-                                            while(!selectedAH.isAhMessageParsed()){
-                                                Thread.sleep(50);
+                            //prevent bid message console lock if auction house
+                            //disconnected when we tried to place a bid
+                            if(!selectedAH.getAgentToAHSocket().isClosed()) {
+                                // Displays all items in an AH to bid
+                                if (menuInput.split(" ").length == 2) {
+                                    String desiredRow = menuInput.split(" ")[0];
+                                    String bidPrice = menuInput.split(" ")[1];
+                                    for (int i = 0; i < itemStrings.size(); i++) {
+                                        int menuEntry = i + 1;
+                                        String itemSelected = "" + menuEntry;
+                                        if (desiredRow.equals(itemSelected)) {
+                                            //set item to bid on
+                                            String[] words = menuInput.split(" ");
+                                            try {
+                                                // This giant line of code just grabs itemID from our
+                                                // item description "Item Name: ~, Item ID: ~,...."
+                                                int itemID = Integer.parseInt(itemStrings.get(Integer.parseInt(desiredRow) - 1).split(", ")[1].split("Item ID: ")[1]);
+                                                double bid = Double.parseDouble(bidPrice);
+                                                //send bid to auction house
+                                                System.out.println("Bid Sent.");
+                                                //String bidStatus = selectedAH.sendAHMsg("trybid:"+itemID+":"+bid+":"+bankAccountNumber);
+                                                selectedAH.setAhMessageParsed(false);
+                                                selectedAH.sendAHMsg("trybid:" + itemID + ":" + bid + ":" + bankAccountNumber);
+                                                while (!selectedAH.isAhMessageParsed()) {
+                                                    Thread.sleep(50);
+                                                }
+                                                String bidStatus = selectedAH.getReturnMessage();
+                                                System.out.println(bidStatus);
+                                                if (bidStatus.equals("ACCEPTED")) {
+                                                    increaseActiveBids();
+                                                }
+                                            } catch (NumberFormatException e) {
+                                                System.out.println("Incorrect bid amount input");
                                             }
-                                            String bidStatus = selectedAH.getReturnMessage();
-                                            System.out.println(bidStatus);
-                                            if(bidStatus.equals("ACCEPTED")) {
-                                                increaseActiveBids();
-                                            }
-                                        } catch (NumberFormatException e) {
-                                            System.out.println("Incorrect bid amount input");
                                         }
                                     }
+
                                 }
-                            }else{
+                            }else if(selectedAH.getAgentToAHSocket().isClosed()){
+                                //Inform the user that the auction house
+                                //disconnected and go back to the second menu
+                                System.out.println("Auction House Disconnected");
+                                menu = Menu.SECOND;
+                            }else {
                                 System.out.println("Incorrect input");
                             }
                         }
@@ -350,5 +360,9 @@ public class AgentProxy implements Runnable{
     }
     public void addAuctionHouse(AgentAHProxy agentAHProxy, String name) {
         connectedAHs.put(name,agentAHProxy);
+    }
+
+    public void removeAuctionHouse(String auctionHouseName) {
+        connectedAHs.remove(auctionHouseName);
     }
 }

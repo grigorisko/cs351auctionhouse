@@ -49,7 +49,7 @@ public class AgentAHProxy implements Runnable{
         String clientMessage = "";
         while(true){
             try {
-                while(agentToAHSocket.isConnected()){
+                while(agentToAHSocket.isConnected() && !agentToAHSocket.isClosed()){
                     // Read income message
                     String message = in.readLine();
                     //System.out.println(message);
@@ -64,13 +64,10 @@ public class AgentAHProxy implements Runnable{
                     else if(message.contains("REJECTED")) {
                         returnMessage = message;
                         ahMessageParsed = true;
-                    }else if(message.contains("" + Status.OUTBID)){
-                        System.out.println(message);
-                    }else if(message.contains("" + Status.WINNER)){
-                        System.out.println(message);
                     }
                     else if(message.contains("OUTBID")) {
                         System.out.println(message);
+                        agentProxy.decreaseActiveBids();
                     }
                     else if(message.contains("WINNER")) {
                         System.out.println(message);
@@ -81,6 +78,12 @@ public class AgentAHProxy implements Runnable{
                         System.out.println(message);
                         agentProxy.sendBankMsg(message);
                         agentProxy.decreaseActiveBids();
+                    }
+                    //handle auction house exiting
+                    //close socket and remove from AH list
+                    else if(message.contains("exiting")) {
+                        agentToAHSocket.close();
+                        agentProxy.removeAuctionHouse(message.split(" ")[0]);
                     }
                     //System.out.println(message);
                 }

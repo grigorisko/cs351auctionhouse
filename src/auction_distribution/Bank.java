@@ -14,7 +14,7 @@ public class Bank {
     private ArrayList<String> bankAccounts = new ArrayList<>();
 
     public Bank(int port) throws IOException {
-        serverSocket = new ServerSocket(port, 1, InetAddress.getLocalHost());
+        serverSocket = new ServerSocket(port, 20, InetAddress.getLocalHost());
         System.out.println(serverSocket.getInetAddress());
         System.out.println(InetAddress.getLocalHost().getHostAddress());
     }
