@@ -68,6 +68,7 @@ public class BankProxy implements Runnable{
             //send clients their account number
             printWriter.println("accountnumber:" + bankAccount.getAccountNumber());
             // Send client list of active AuctionHouses
+            System.out.println(getActiveAuctionHouses());
             printWriter.println(getActiveAuctionHouses());
             printWriter.flush();
         }
@@ -102,7 +103,7 @@ public class BankProxy implements Runnable{
     private synchronized String getActiveAuctionHouses(){
         String listAsString = "";
         for(String auctionServer: activeAuctionHouses){
-            listAsString = listAsString + " " + auctionServer;
+            listAsString += auctionServer +"/";
         }
 
         return listAsString;
@@ -119,14 +120,14 @@ public class BankProxy implements Runnable{
             try {
                 clientMessage = bufferedReader.readLine();
                 if(clientMessage != null){
-                    System.out.println(clientMessage);
+                    //System.out.println(clientMessage);
 
                     // DO LOGIC STUFF
                     //receive message from auction house in format
                     //balance;accountNumber;bidAmount
                     if(clientMessage.contains("balance;") && this.isAuctionHouse) {
-                        System.out.println(clientMessage);
                         String[] words = clientMessage.split(";");
+                        System.out.println("Checking balance of account "+words[1]);
                         for (BankAccount bankAccount:bankAccounts) {
                             if (words[1].equals(bankAccount.getAccountNumber())) {
                                 if(bankAccount.checkBalance(Double.parseDouble(words[2]))) {
@@ -157,6 +158,10 @@ public class BankProxy implements Runnable{
 
                         }
                     }
+                    else if(clientMessage.equals("AutoBidderAvailableBalance")) {
+                        printWriter.println("Available Balance:"+this.bankAccount.getBalance());
+                        printWriter.flush();
+                    }
                     //auction house inquiry
                     //received from agent
                     else if(clientMessage.equalsIgnoreCase("auction houses")) {
@@ -167,8 +172,11 @@ public class BankProxy implements Runnable{
                     //finalize;auctionhouseid;amount
                     //received from agent
                     else if(clientMessage.contains("finalize;")) {
-                        System.out.println(clientMessage);
+                        System.out.println("Finalizing bid");
                         String[] words = clientMessage.split(";");
+                        System.out.println("Transferring funds from "+
+                                this.bankAccount.getAccountNumber() +
+                                " to " + words[1]);
                         for(BankAccount bankAccount:bankAccounts) {
                             if(words[1].equals(bankAccount.getAccountNumber())) {
                                 this.bankAccount.sendPayment(Double.parseDouble(words[2]), bankAccount);
@@ -184,7 +192,7 @@ public class BankProxy implements Runnable{
                     }
                     //unblock agent balance when outbid
                     else if(clientMessage.contains("unblock;")) {
-                        System.out.println(clientMessage);
+                        //System.out.println(clientMessage);
                         String[] words = clientMessage.split(";");
                         for(BankAccount bankAccount:bankAccounts) {
                             if(words[1].equals(bankAccount.getAccountNumber())) {

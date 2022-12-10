@@ -44,7 +44,7 @@ public class AgentProxy implements Runnable{
         out = new PrintWriter(socket.getOutputStream(), true);
         this.bankBalance = 0;
         this.trueBalance = 0;
-        System.out.println("Connected to a new Server.");
+        System.out.println("Connected to Bank.");
 
 
         // Send Initial Client Information to Bank
@@ -57,8 +57,8 @@ public class AgentProxy implements Runnable{
         connectedAHs = new HashMap<>();
         // Get bank account number
         bankAccountNumber = in.readLine().split(":")[1];
-        String[] activeAHs = in.readLine().strip().split(" ");
-        System.out.println(activeAHs.toString());
+        String[] activeAHs = in.readLine().strip().split("/");
+        //System.out.println(activeAHs.toString());
         System.out.println("Active Auction Houses = " + Arrays.toString(activeAHs));
         // Connect to ALL Active Auction Houses
         // check that there are auction houses
@@ -308,7 +308,6 @@ public class AgentProxy implements Runnable{
                             int port = Integer.parseInt(ahs[i].split(";")[2]);
                             System.out.println("Trying to Connect to " + address + " w/ port " + port);
                             Socket newConnectedServer = new Socket(address, port);
-                            //AgentAHProxy ahProxy = new AgentAHProxy(newConnectedServer, this);
                             Thread ahProxyThread = new Thread(new AgentAHProxy(newConnectedServer, this, ahName));
                             ahProxyThread.start();
                         }

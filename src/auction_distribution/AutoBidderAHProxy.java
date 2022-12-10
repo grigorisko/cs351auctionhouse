@@ -7,23 +7,23 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 
-public class AgentAHProxy implements Runnable{
-    private Socket agentToAHSocket;
+public class AutoBidderAHProxy implements Runnable{
+    private Socket autoBidderToAHSocket;
     private BufferedReader in;
     private PrintWriter out;
     private String returnMessage;
-    private AgentProxy agentProxy;
+    private AutoBidderProxy autoBidderProxy;
     private boolean ahMessageParsed;
     private String ahName;
 
 
-    public AgentAHProxy(Socket auctionHouseSocket, AgentProxy agentProxy, String name) throws IOException {
-        this.agentProxy = agentProxy;
-        this.agentToAHSocket = auctionHouseSocket;
+    public AutoBidderAHProxy(Socket auctionHouseSocket, AutoBidderProxy autoBidderProxy, String name) throws IOException {
+        this.autoBidderProxy = autoBidderProxy;
+        this.autoBidderToAHSocket = auctionHouseSocket;
         this.ahName = name;
-        agentProxy.addAuctionHouse(this,ahName);
-        in = new BufferedReader(new InputStreamReader(agentToAHSocket.getInputStream()));
-        out = new PrintWriter(agentToAHSocket.getOutputStream(), true);
+        autoBidderProxy.addAuctionHouse(this,ahName);
+        in = new BufferedReader(new InputStreamReader(autoBidderToAHSocket.getInputStream()));
+        out = new PrintWriter(autoBidderToAHSocket.getOutputStream(), true);
     }
 
     /**
@@ -43,7 +43,7 @@ public class AgentAHProxy implements Runnable{
         String clientMessage = "";
         while(true){
             try {
-                while(agentToAHSocket.isConnected() && !agentToAHSocket.isClosed()){
+                while(autoBidderToAHSocket.isConnected() && !autoBidderToAHSocket.isClosed()){
                     // Read income message
                     String message = in.readLine();
                     //System.out.println(message);
@@ -61,7 +61,7 @@ public class AgentAHProxy implements Runnable{
                     }
                     else if(message.contains("OUTBID")) {
                         System.out.println(message);
-                        agentProxy.decreaseActiveBids();
+                        autoBidderProxy.decreaseActiveBids();
                     }
                     else if(message.contains("WINNER")) {
                         System.out.println(message);
@@ -69,15 +69,17 @@ public class AgentAHProxy implements Runnable{
                     //receive message from AH that bid was won
                     //format finalize;ahBankAccount;amount
                     else if(message.contains("finalize")) {
-                        agentProxy.sendBankMsg(message);
-                        agentProxy.decreaseActiveBids();
+                        //System.out.println(message);
+                        autoBidderProxy.sendBankMsg(message);
+                        autoBidderProxy.decreaseActiveBids();
                     }
                     //handle auction house exiting
                     //close socket and remove from AH list
                     else if(message.contains("exiting")) {
-                        agentToAHSocket.close();
-                        agentProxy.removeAuctionHouse(message.split(" ")[0]);
+                        autoBidderToAHSocket.close();
+                        autoBidderProxy.removeAuctionHouse(message.split(" ")[0]);
                     }
+                    //System.out.println(message);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -87,8 +89,8 @@ public class AgentAHProxy implements Runnable{
 
     }
 
-    public Socket getAgentToAHSocket() {
-        return agentToAHSocket;
+    public Socket getAutoBidderToAHSocket() {
+        return autoBidderToAHSocket;
     }
 
     public void setAhMessageParsed(boolean ahMessageParsed) {

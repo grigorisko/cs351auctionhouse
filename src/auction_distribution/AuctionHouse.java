@@ -360,5 +360,7 @@ public class AuctionHouse {
         connectedClients.add(auctionHouseProxy);
     }
 
-
+    public String getCompanyName() {
+        return companyName;
+    }
 }

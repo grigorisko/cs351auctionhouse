@@ -71,7 +71,23 @@ public class AuctionHouseProxy implements Runnable{
                         printerWriter.println(itemMsg);
                         printerWriter.flush();
                     }
-                    if(clientMessage.contains("trybid:")) {
+                    else if (clientMessage.contains("autoBidder")) {
+                        List<Item> itemsOnSale = auctionHouse.getItemsOnSale();
+                        String itemMsg = "Items/";
+                        for(Item i:itemsOnSale) {
+                            itemMsg+=auctionHouse.getCompanyName();
+                            itemMsg+= ":";
+                            itemMsg+=i.getItemID();
+                            itemMsg+= ":";
+                            itemMsg+=i.getMinimumBid();
+                            itemMsg+= ":";
+                            itemMsg+=i.getCurrentWinnerAccount();
+                            itemMsg+= ";";
+                        }
+                        printerWriter.println(itemMsg);
+                        printerWriter.flush();
+                    }
+                    else if(clientMessage.contains("trybid:")) {
                         //startbid
                         String[] bidRequest = clientMessage.split(":");
                         int itemID = Integer.parseInt(bidRequest[1]);
