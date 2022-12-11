@@ -1,9 +1,12 @@
-package auction_distribution;
 /**
- *  Create the hashmap for easier access with the Host and the port information
- *  Maybe a function that give out the port and host information through the name of the company (auction house)
- *  Communicate to the bank?????????
+ * Author:  Fermin Ramos, Vasileios Grigorios Kourakos and Loc Tung Sy
+ * Email: locsu@unm.edu, ramosfer@unm.edu, grigorisk@unm.edu
+ * Class: Cs 351L
+ * Professor: Brooke Chenoweth
+ * Project 5: AuctionHouse Distribution
+ * The AuctionHouse.java responsible for
  */
+package auction_distribution;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -36,13 +39,12 @@ public class AuctionHouse {
     //static list of all connected agents
     private static List<AuctionHouseProxy> connectedClients = new ArrayList<>();
 
+    /**
+     * The AuctionHouse constructor
+     * @throws IOException
+     */
     public AuctionHouse() throws IOException {
         auctionHouse = this;
-
-//        // Gets company name
-//        System.out.println("Company Name:");
-//        Scanner scanner = new Scanner(System.in);
-//        companyName = scanner.nextLine();
         System.out.println("Enter Bank Address");
         Scanner scanner = new Scanner(System.in);
         String bankAddress = scanner.nextLine();
@@ -193,6 +195,10 @@ public class AuctionHouse {
         }).start();
     }
 
+    /**
+     * Selling the item, remove it from the inventory
+     * @return
+     */
     private synchronized Item sellNewItem() {
         Random rand = new Random();
         Item itemToSell = inventoryList.remove(rand.nextInt(inventoryList.size()));
@@ -201,6 +207,9 @@ public class AuctionHouse {
         return itemToSell;
     }
 
+    /**
+     * Read in the inventory file, store it inside of inventoryList
+     */
     private void initializeInventory() {
         try (BufferedReader reader =
                      new BufferedReader(new InputStreamReader
@@ -233,16 +242,29 @@ public class AuctionHouse {
         }
     }
 
+    /**
+     * Starting the server
+     * @param args
+     * @throws IOException
+     */
     public static void main(String[] args) throws IOException {
         AuctionHouse auctionHouse = new AuctionHouse();
         auctionHouse.listen();
         auctionHouse.sendConsoleInput();
         auctionHouse.startServer();
     }
+
+    /**
+     * Get the itemsOnSale list
+     * @return itemsOnSale
+     */
     public synchronized List<Item> getItemsOnSale() {
         return itemsOnSale;
     }
-
+    /**
+     * Get the inventoryList list
+     * @return inventoryList
+     */
     public List<Item> getInventoryList(){
         return inventoryList;
     }
@@ -314,6 +336,11 @@ public class AuctionHouse {
         processingBid = false;
     }
 
+    /**
+     * Finalizing the bid after the 30 sec ended. Notify the winner
+     * @param item the item that is being bid
+     * @throws InterruptedException
+     */
     public void finalizeBid(Item item) throws InterruptedException {
         while(processingBid) {
             Thread.sleep(50);
@@ -337,11 +364,20 @@ public class AuctionHouse {
         }
     }
 
-    //add a client to the list of connected clients
+
+
+    /**
+     * Adding a new client to the list of connected clients
+     * @param auctionHouseProxy
+     */
     public void addClient(AuctionHouseProxy auctionHouseProxy) {
         connectedClients.add(auctionHouseProxy);
     }
 
+    /**
+     * Get the company name
+     * @return companyName
+     */
     public String getCompanyName() {
         return companyName;
     }

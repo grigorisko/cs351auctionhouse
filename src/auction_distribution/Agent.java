@@ -1,3 +1,13 @@
+/**
+ * Author:  Fermin Ramos, Vasileios Grigorios Kourakos and Loc Tung Sy
+ * Email: locsu@unm.edu, ramosfer@unm.edu, grigorisk@unm.edu
+ * Class: Cs 351L
+ * Professor: Brooke Chenoweth
+ * Project 5: AuctionHouse Distribution
+ * The Agent.java is Client that responsible for creating connection between
+ * itself to the AuctionHouse and the Bank. Requesting access to the list of AuctionHouses
+ * , sending different commands using the AgentProxy
+ */
 package auction_distribution;
 
 import java.io.BufferedReader;
@@ -12,6 +22,10 @@ public class Agent {
     private PrintWriter printWriter;
     private String username;
 
+    /**
+     * Agent constructor
+     * @throws IOException
+     */
     public Agent() throws IOException {
         System.out.println("Enter Bank Address");
         Scanner scanner = new Scanner(System.in);

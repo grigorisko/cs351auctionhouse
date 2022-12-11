@@ -1,3 +1,13 @@
+/**
+ * Author:  Fermin Ramos, Vasileios Grigorios Kourakos and Loc Tung Sy
+ * Email: locsu@unm.edu, ramosfer@unm.edu, grigorisk@unm.edu
+ * Class: Cs 351L
+ * Professor: Brooke Chenoweth
+ * Project 5: AuctionHouse Distribution
+ * The Agent.java is Client that responsible for creating connection between
+ * itself to the AuctionHouse and the Bank. Requesting access to the list of AuctionHouses
+ * , sending different commands using the AgentProxy
+ */
 package auction_distribution;
 
 import java.io.BufferedReader;
@@ -26,7 +36,12 @@ public class AutoBidderProxy implements Runnable{
     private int timer = 0;
     private int biddingInterval = 5;
     private Timer t = new Timer();
-
+    /**
+     * AutoBiiderProxy's constructor
+     * @param socket
+     * @param autoBidder
+     * @throws IOException
+     */
     public AutoBidderProxy(Socket socket, AutoBidder autoBidder) throws IOException {
         this.autoBidder = autoBidder;
         // Gets username
@@ -78,7 +93,10 @@ public class AutoBidderProxy implements Runnable{
         consoleInput();
     }
 
-
+    /**
+     * Get the list of all available AuctionHouses
+     * @return
+     */
     private synchronized String[] getListOfAHs(){
         String[] list = new String[connectedAHs.size()];
 
@@ -90,12 +108,18 @@ public class AutoBidderProxy implements Runnable{
 
         return list;
     }
-
+    /**
+     * Send message to the
+     * @param message
+     */
     public void sendBankMsg(String message) {
         out.println(message);
         out.flush();
     }
 
+    /**
+     * Stating the bid
+     */
     private void startBidding() {
         TimerTask tt = new TimerTask() {
             @Override
@@ -281,34 +305,30 @@ public class AutoBidderProxy implements Runnable{
         }
 
     }
-
-    public void setBankBalance(int bankBalance) {
-        this.bankBalance = bankBalance;
-    }
-    public int getBankBalance() {
-        return bankBalance;
-    }
-    public void printBalance(int balance) {
-        out.println(getClientName() + " have " + balance + " dollars.");
-    }
-    public String getClientName() {
-        return clientName;
-    }
-    public void printList(List<Item> itemList) {
-        for (Item item : itemList) {
-            System.out.println("Item:" + item.getItemName()+  " price: " + item.getDefaultPrice());
-        }
-    }
+    /**
+     * Increase the active bid
+     */
     public synchronized void increaseActiveBids() {
         activeBids++;
     }
+    /**
+     * Decrease the active bid
+     */
     public synchronized void decreaseActiveBids() {
         activeBids--;
     }
+    /**
+     * Add a new AuctionHouse into the list of AuctionHouse
+     * @param autoBidderAHProxy
+     * @param name
+     */
     public void addAuctionHouse(AutoBidderAHProxy autoBidderAHProxy, String name) {
         connectedAHs.put(name,autoBidderAHProxy);
     }
-
+    /**
+     * Remove a AuctionHouse into the list of AuctionHouse
+     * @param auctionHouseName
+     */
     public void removeAuctionHouse(String auctionHouseName) {
         connectedAHs.remove(auctionHouseName);
     }

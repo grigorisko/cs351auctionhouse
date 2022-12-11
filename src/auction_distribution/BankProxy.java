@@ -1,3 +1,12 @@
+/**
+ * Author:  Fermin Ramos, Vasileios Grigorios Kourakos and Loc Tung Sy
+ * Email: locsu@unm.edu, ramosfer@unm.edu, grigorisk@unm.edu
+ * Class: Cs 351L
+ * Professor: Brooke Chenoweth
+ * Project 5: AuctionHouse Distribution
+ * The BankProxy.java responsible for listening and sending messages
+ * from it clients counterpart, and execute different tasks upon requested.
+ */
 package auction_distribution;
 
 import java.io.BufferedReader;
@@ -20,6 +29,12 @@ public class BankProxy implements Runnable{
     private static ArrayList<BankAccount> bankAccounts = new ArrayList<>();
     private static ArrayList<BankProxy> bankProxies = new ArrayList<>();
 
+    /**
+     * The BankProxy constructor
+     * @param clientSocket the client socket
+     * @param accountNumber the client's account number
+     * @throws IOException
+     */
     public BankProxy(Socket clientSocket, String accountNumber) throws IOException {
         // Socket connection w/ Client
         this.clientSocket = clientSocket;
@@ -92,6 +107,12 @@ public class BankProxy implements Runnable{
         activeAuctionHouses.add(auctionHouse);
     }
 
+
+    /**
+     * Remove an auction house to our list of active auction houses.
+     * Method used for synchronization purposes.
+     * @param auctionHouse
+     */
     private synchronized void removeAuctionHouse(String auctionHouse){
         activeAuctionHouses.remove(auctionHouse);
     }

@@ -1,3 +1,12 @@
+/**
+ * Author:  Fermin Ramos, Vasileios Grigorios Kourakos and Loc Tung Sy
+ * Email: locsu@unm.edu, ramosfer@unm.edu, grigorisk@unm.edu
+ * Class: Cs 351L
+ * Professor: Brooke Chenoweth
+ * Project 5: AuctionHouse Distribution
+ * The AuctionHouseProxy.java responsible for listening and sending messages
+ * from it clients counterpart, and execute different tasks upon requested.
+ */
 package auction_distribution;
 
 import java.io.BufferedReader;

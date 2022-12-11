@@ -1,3 +1,12 @@
+/**
+ * Author:  Fermin Ramos, Vasileios Grigorios Kourakos and Loc Tung Sy
+ * Email: locsu@unm.edu, ramosfer@unm.edu, grigorisk@unm.edu
+ * Class: Cs 351L
+ * Professor: Brooke Chenoweth
+ * Project 5: AuctionHouse Distribution
+ * The AutoBidder.java is Client that responsible for creating connection between
+ * itself to the AuctionHouse and the Bank. It is the same with Agent.java, but automated
+ */
 package auction_distribution;
 
 import java.io.BufferedReader;
@@ -12,6 +21,10 @@ public class AutoBidder {
     private PrintWriter printWriter;
     private String username;
 
+    /**
+     * AutoBidder's constructtor
+     * @throws IOException
+     */
     public AutoBidder() throws IOException {
         System.out.println("Enter Bank Address");
         Scanner scanner = new Scanner(System.in);

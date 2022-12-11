@@ -1,3 +1,13 @@
+/**
+ * Author:  Fermin Ramos, Vasileios Grigorios Kourakos and Loc Tung Sy
+ * Email: locsu@unm.edu, ramosfer@unm.edu, grigorisk@unm.edu
+ * Class: Cs 351L
+ * Professor: Brooke Chenoweth
+ * Project 5: AuctionHouse Distribution
+ * The AgentProxy.java responsible for listening and sending messages
+ * from it clients counterpart, and execute different tasks upon requested. This AgentProxy mainly ]
+ * focus on the interaction with the bank
+ */
 package auction_distribution;
 
 import java.io.BufferedReader;
@@ -29,6 +39,12 @@ public class AgentProxy implements Runnable{
     private boolean ahMessageParsed = false;
     private String ahMessage;
 
+    /**
+     * AgentProxy's constructor
+     * @param socket
+     * @param agent
+     * @throws IOException
+     */
     public AgentProxy(Socket socket, Agent agent) throws IOException {
         this.agent = agent;
         // Gets username
@@ -79,7 +95,10 @@ public class AgentProxy implements Runnable{
         consoleInput();
     }
 
-
+    /**
+     * Get the list of all available AuctionHouses
+     * @return
+     */
     private synchronized String[] getListOfAHs(){
         String[] list = new String[connectedAHs.size()];
 
@@ -92,12 +111,18 @@ public class AgentProxy implements Runnable{
         return list;
     }
 
+    /**
+     * Send message to the
+     * @param message
+     */
     public void sendBankMsg(String message) {
         out.println(message);
         out.flush();
     }
 
-    //enum for menu state
+    /**
+     * Menu enum
+     */
     enum Menu {
         FIRST,
         SECOND,
@@ -353,33 +378,33 @@ public class AgentProxy implements Runnable{
 
     }
 
-    public void setBankBalance(int bankBalance) {
-        this.bankBalance = bankBalance;
-    }
-    public int getBankBalance() {
-        return bankBalance;
-    }
-    public void printBalance(int balance) {
-        out.println(getClientName() + " have " + balance + " dollars.");
-    }
-    public String getClientName() {
-        return clientName;
-    }
-    public void printList(List<Item> itemList) {
-        for (Item item : itemList) {
-            System.out.println("Item:" + item.getItemName()+  " price: " + item.getDefaultPrice());
-        }
-    }
+    /**
+     * Increase the active bid
+     */
     public synchronized void increaseActiveBids() {
         activeBids++;
     }
+
+    /**
+     * Decrease the active bid
+     */
     public synchronized void decreaseActiveBids() {
         activeBids--;
     }
+
+    /**
+     * Add a new AuctionHouse into the list of AuctionHouse
+     * @param agentAHProxy
+     * @param name
+     */
     public void addAuctionHouse(AgentAHProxy agentAHProxy, String name) {
         connectedAHs.put(name,agentAHProxy);
     }
 
+    /**
+     * Remove a AuctionHouse into the list of AuctionHouse
+     * @param auctionHouseName
+     */
     public void removeAuctionHouse(String auctionHouseName) {
         connectedAHs.remove(auctionHouseName);
     }

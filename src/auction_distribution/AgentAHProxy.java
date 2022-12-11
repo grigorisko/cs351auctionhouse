@@ -1,3 +1,13 @@
+/**
+ * Author:  Fermin Ramos, Vasileios Grigorios Kourakos and Loc Tung Sy
+ * Email: locsu@unm.edu, ramosfer@unm.edu, grigorisk@unm.edu
+ * Class: Cs 351L
+ * Professor: Brooke Chenoweth
+ * Project 5: AuctionHouse Distribution
+ * The AgentAHProxy.java responsible for listening and sending messages
+ * from it clients counterpart, and execute different tasks upon requested.
+ * This is mainly focus on the interaction with the AuctionHouse
+ */
 package auction_distribution;
 
 import java.io.BufferedReader;
@@ -16,7 +26,13 @@ public class AgentAHProxy implements Runnable{
     private boolean ahMessageParsed;
     private String ahName;
 
-
+    /**
+     * AgentAHProxy's constructor
+     * @param auctionHouseSocket
+     * @param agentProxy
+     * @param name
+     * @throws IOException
+     */
     public AgentAHProxy(Socket auctionHouseSocket, AgentProxy agentProxy, String name) throws IOException {
         this.agentProxy = agentProxy;
         this.agentToAHSocket = auctionHouseSocket;
@@ -90,18 +106,34 @@ public class AgentAHProxy implements Runnable{
 
     }
 
+    /**
+     * Get agentToAHSocket
+     * @return agentToAHSocket
+     */
     public Socket getAgentToAHSocket() {
         return agentToAHSocket;
     }
 
+    /**
+     * Set ahMessageParsed
+     * @param ahMessageParsed
+     */
     public void setAhMessageParsed(boolean ahMessageParsed) {
         this.ahMessageParsed = ahMessageParsed;
     }
 
+    /**
+     * Check if isAhMessageParsed is true or false
+     * @return true or false
+     */
     public boolean isAhMessageParsed() {
         return ahMessageParsed;
     }
 
+    /**
+     * Get the returnMessage
+     * @return returnMessage
+     */
     public String getReturnMessage() {
         return returnMessage;
     }

@@ -1,3 +1,13 @@
+/**
+ * Author:  Fermin Ramos, Vasileios Grigorios Kourakos and Loc Tung Sy
+ * Email: locsu@unm.edu, ramosfer@unm.edu, grigorisk@unm.edu
+ * Class: Cs 351L
+ * Professor: Brooke Chenoweth
+ * Project 5: AuctionHouse Distribution
+ * The Agent.java is Client that responsible for creating connection between
+ * itself to the AuctionHouse and the Bank. Requesting access to the list of AuctionHouses
+ * , sending different commands using the AgentProxy
+ */
 package auction_distribution;
 
 import java.io.BufferedReader;
@@ -16,7 +26,13 @@ public class AutoBidderAHProxy implements Runnable{
     private boolean ahMessageParsed;
     private String ahName;
 
-
+    /**
+     * AgentAHProxy's constructor
+     * @param auctionHouseSocket
+     * @param autoBidderProxy
+     * @param name
+     * @throws IOException
+     */
     public AutoBidderAHProxy(Socket auctionHouseSocket, AutoBidderProxy autoBidderProxy, String name) throws IOException {
         this.autoBidderProxy = autoBidderProxy;
         this.autoBidderToAHSocket = auctionHouseSocket;
@@ -88,19 +104,31 @@ public class AutoBidderAHProxy implements Runnable{
         }
 
     }
-
+    /**
+     * Get AutoBidderToAHSocket
+     * @return AutoBidderToAHSocket
+     */
     public Socket getAutoBidderToAHSocket() {
         return autoBidderToAHSocket;
     }
-
+    /**
+     * Set ahMessageParsed
+     * @param ahMessageParsed
+     */
     public void setAhMessageParsed(boolean ahMessageParsed) {
         this.ahMessageParsed = ahMessageParsed;
     }
-
+    /**
+     * Check if isAhMessageParsed is true or false
+     * @return true or false
+     */
     public boolean isAhMessageParsed() {
         return ahMessageParsed;
     }
-
+    /**
+     * Get the returnMessage
+     * @return returnMessage
+     */
     public String getReturnMessage() {
         return returnMessage;
     }
