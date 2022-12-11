@@ -226,10 +226,13 @@ public class AgentProxy implements Runnable{
                             }
                             int previousEntry = itemStrings.size()+1;
                             System.out.println(previousEntry + ". Previous Menu");
+                            System.out.println(previousEntry+1 + ". Refresh Menu");
                             String menuInput = scanner.nextLine();
                             //go back to previous menu
                             if(menuInput.equals("" + previousEntry)) {
                                 menu = Menu.SECOND;
+                            }else if(menuInput.equals("" + previousEntry+1)){
+                                continue;  // Refreshes Menu items.
                             }
                             else {
                                 //prevent bid message console lock if auction house
