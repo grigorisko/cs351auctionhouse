@@ -62,7 +62,6 @@ public class AgentAHProxy implements Runnable{
                 while(agentToAHSocket.isConnected() && !agentToAHSocket.isClosed()){
                     // Read income message
                     String message = in.readLine();
-                    //System.out.println(message);
                     if(message.contains("Items/")) {
                         returnMessage = message.split("/")[1];
                         ahMessageParsed = true;
@@ -96,6 +95,8 @@ public class AgentAHProxy implements Runnable{
                     else if(message.contains("exiting")) {
                         agentToAHSocket.close();
                         agentProxy.removeAuctionHouse(message.split(" ")[0]);
+                        System.out.println("Auction house " +
+                                message.split(" ")[0] + " exiting.");
                     }
                 }
             } catch (IOException e) {

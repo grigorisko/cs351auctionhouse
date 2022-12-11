@@ -4,9 +4,9 @@
  * Class: Cs 351L
  * Professor: Brooke Chenoweth
  * Project 5: AuctionHouse Distribution
- * The Agent.java is Client that responsible for creating connection between
- * itself to the AuctionHouse and the Bank. Requesting access to the list of AuctionHouses
- * , sending different commands using the AgentProxy
+ * The AutoBidderProxy.java is a class that handles the automated bidding.
+ * It gets all available items from all connected auction houses and chooses
+ * a random item to bid on.
  */
 package auction_distribution;
 
@@ -37,7 +37,7 @@ public class AutoBidderProxy implements Runnable{
     private int biddingInterval = 5;
     private Timer t = new Timer();
     /**
-     * AutoBiiderProxy's constructor
+     * AutoBidderProxy's constructor
      * @param socket
      * @param autoBidder
      * @throws IOException
@@ -274,16 +274,14 @@ public class AutoBidderProxy implements Runnable{
                     String message = in.readLine();
                     //new auction house connected
                     if(message.contains("newAH ")) {
-                        String[] ahs = message.split(" ");
-                        for (int i=1;i<ahs.length;i++) {
-                            String ahName = ahs[i].split(";")[0];
-                            String address = ahs[i].split(";")[1];
-                            int port = Integer.parseInt(ahs[i].split(";")[2]);
-                            System.out.println("Trying to Connect to " + address + " w/ port " + port);
-                            Socket newConnectedServer = new Socket(address, port);
-                            Thread ahProxyThread = new Thread(new AutoBidderAHProxy(newConnectedServer, this, ahName));
-                            ahProxyThread.start();
-                        }
+                        String ahs = message.split(" ")[1];
+                        String ahName = ahs.split(";")[0];
+                        String address = ahs.split(";")[1];
+                        int port = Integer.parseInt(ahs.split(";")[2]);
+                        System.out.println("Trying to Connect to " + address + " w/ port " + port);
+                        Socket newConnectedServer = new Socket(address, port);
+                        Thread ahProxyThread = new Thread(new AutoBidderAHProxy(newConnectedServer, this, ahName));
+                        ahProxyThread.start();
                     }
                     if(message.contains("Available Balance:")) {
                         balanceMessage = message.split(":")[1];

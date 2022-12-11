@@ -38,10 +38,20 @@ public class BankProxy implements Runnable{
     public BankProxy(Socket clientSocket, String accountNumber) throws IOException {
         // Socket connection w/ Client
         this.clientSocket = clientSocket;
-
+        this.bankAccount = new BankAccount(accountNumber, 0);
         bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         printWriter = new PrintWriter(clientSocket.getOutputStream());
+    }
 
+    /**
+     * Performs the initial setup on client connection.
+     * Gets names from AH,agents and initial balance from agents
+     * and sends them their bank account number
+     * If client is an auction house, notifies any connected agents
+     * that a new auction house has connected
+     * @throws IOException
+     */
+    private void initialSetup() throws IOException {
         // Get Initial Client Data (format: name;clientType;address;port)
         String clientInfo = bufferedReader.readLine();
 
@@ -49,7 +59,6 @@ public class BankProxy implements Runnable{
         // Parse initial client data based what client connected (AH or Agent)
         if(clientInfo.toLowerCase().contains("server")){  // Client = AH
             System.out.println("New <AuctionHouse> Connected w/ Server details: " + clientInfo);
-            this.bankAccount = new BankAccount(accountNumber, 0);
             this.isAuctionHouse = true;
             // Add AuctionHouse to list of active AuctionHouses
             String companyName = clientInfo.split(";")[0];
@@ -64,7 +73,7 @@ public class BankProxy implements Runnable{
             //send agents new AH info
             for(BankProxy bankProxy: bankProxies) {
                 if (!bankProxy.isAuctionHouse) {
-                    bankProxy.printWriter.println("newAH"+getActiveAuctionHouses());
+                    bankProxy.printWriter.println("newAH "+companyName+";"+auctionHouseServer);
                     bankProxy.printWriter.flush();
                 }
             }
@@ -74,7 +83,7 @@ public class BankProxy implements Runnable{
             String balanceInfo = bufferedReader.readLine();
 
 
-            this.bankAccount = new BankAccount(accountNumber, 1000);
+            //this.bankAccount = new BankAccount(accountNumber, 1000);
             bankProxies.add(this);
             bankAccounts.add(this.bankAccount);
             if(!isAuctionHouse) {
@@ -95,7 +104,6 @@ public class BankProxy implements Runnable{
             printWriter.println("accountNumber:"+bankAccount.getAccountNumber());
             printWriter.flush();
         }
-
     }
 
     /**
@@ -136,6 +144,11 @@ public class BankProxy implements Runnable{
      */
     @Override
     public void run() {
+        try {
+            initialSetup();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         String clientMessage = "";
         while(clientSocket.isConnected() && clientMessage != null){
             try {
@@ -223,13 +236,18 @@ public class BankProxy implements Runnable{
                     }
                     //auction house deregistering
                     else if(clientMessage.contains("exiting")) {
-                        System.out.println("Auction House " + clientMessage.split(" ")[0] + " exiting");
-                        //remove auction house from list
-                        for(String s: activeAuctionHouses) {
-                            if(s.contains(clientMessage.split(" ")[0])) {
-                                removeAuctionHouse(s);
-                                break;
+                        if(isAuctionHouse) {
+                            System.out.println("Auction House " + clientMessage.split(" ")[0] + " exiting");
+                            //remove auction house from list
+                            for (String s : activeAuctionHouses) {
+                                if (s.contains(clientMessage.split(" ")[0])) {
+                                    removeAuctionHouse(s);
+                                    break;
+                                }
                             }
+                        }
+                        else {
+                            System.out.println("Agent " + clientMessage.split(" ")[1] + " exiting");
                         }
                         //remove this bankproxy
                         bankProxies.remove(this);

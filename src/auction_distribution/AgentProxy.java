@@ -345,16 +345,14 @@ public class AgentProxy implements Runnable{
                     String message = in.readLine();
                     //new auction house connected
                     if(message.contains("newAH ")) {
-                        String[] ahs = message.split(" ");
-                        for (int i=1;i<ahs.length;i++) {
-                            String ahName = ahs[i].split(";")[0];
-                            String address = ahs[i].split(";")[1];
-                            int port = Integer.parseInt(ahs[i].split(";")[2]);
-                            System.out.println("Trying to Connect to " + address + " w/ port " + port);
-                            Socket newConnectedServer = new Socket(address, port);
-                            Thread ahProxyThread = new Thread(new AgentAHProxy(newConnectedServer, this, ahName));
-                            ahProxyThread.start();
-                        }
+                        String ahs = message.split(" ")[1];
+                        String ahName = ahs.split(";")[0];
+                        String address = ahs.split(";")[1];
+                        int port = Integer.parseInt(ahs.split(";")[2]);
+                        System.out.println("Trying to Connect to " + address + " w/ port " + port);
+                        Socket newConnectedServer = new Socket(address, port);
+                        Thread ahProxyThread = new Thread(new AgentAHProxy(newConnectedServer, this, ahName));
+                        ahProxyThread.start();
                     }
                     if(message.contains("Available Balance:")) {
                         balanceMessage = message;

@@ -4,9 +4,8 @@
  * Class: Cs 351L
  * Professor: Brooke Chenoweth
  * Project 5: AuctionHouse Distribution
- * The Agent.java is Client that responsible for creating connection between
- * itself to the AuctionHouse and the Bank. Requesting access to the list of AuctionHouses
- * , sending different commands using the AgentProxy
+ * The AutoBidderAHProxy.java is Client that responsible for creating connection between
+ * the AutoBidder and the auction houses. It receives and parses messages from auction houses.
  */
 package auction_distribution;
 
@@ -27,7 +26,7 @@ public class AutoBidderAHProxy implements Runnable{
     private String ahName;
 
     /**
-     * AgentAHProxy's constructor
+     * AutoBidderAHProxy's constructor
      * @param auctionHouseSocket
      * @param autoBidderProxy
      * @param name
@@ -62,7 +61,6 @@ public class AutoBidderAHProxy implements Runnable{
                 while(autoBidderToAHSocket.isConnected() && !autoBidderToAHSocket.isClosed()){
                     // Read income message
                     String message = in.readLine();
-                    //System.out.println(message);
                     if(message.contains("Items/")) {
                         returnMessage = message.split("/")[1];
                         ahMessageParsed = true;
@@ -85,7 +83,6 @@ public class AutoBidderAHProxy implements Runnable{
                     //receive message from AH that bid was won
                     //format finalize;ahBankAccount;amount
                     else if(message.contains("finalize")) {
-                        //System.out.println(message);
                         autoBidderProxy.sendBankMsg(message);
                         autoBidderProxy.decreaseActiveBids();
                     }
@@ -94,8 +91,9 @@ public class AutoBidderAHProxy implements Runnable{
                     else if(message.contains("exiting")) {
                         autoBidderToAHSocket.close();
                         autoBidderProxy.removeAuctionHouse(message.split(" ")[0]);
+                        System.out.println("Auction house " +
+                                message.split(" ")[0] + " exiting.");
                     }
-                    //System.out.println(message);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
