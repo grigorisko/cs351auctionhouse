@@ -16,7 +16,7 @@ public class Item{
     private boolean bidStarted;
     private boolean itemSold = false;
     private boolean resetTimer = false;
-    private final int BIDDING_DURATION = 5; // how long bidding should last for (seconds)
+    private final int BIDDING_DURATION = 30; // how long bidding should last for (seconds)
     private int timer = BIDDING_DURATION;
     private Timer t = new Timer();
     private AuctionHouse auctionHouse;
@@ -119,7 +119,7 @@ public class Item{
                 @Override
                 public void run() {
                     //this print prevented me from typing exit in console
-                    //System.out.println("timer countdown: " + timer);
+//                    System.out.println("timer countdown: " + timer);
                     timer = timer-1;
                     if(resetTimer) {
                         timer = BIDDING_DURATION;

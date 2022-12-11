@@ -46,34 +46,39 @@ public class AuctionHouseProxy implements Runnable{
                 if(clientMessage != null){
                     System.out.println(clientMessage);
                     //return list of items
+                    String itemMsg = "Items/";
                     if(clientMessage.equals("items")) {
                         List<Item> itemsOnSale = auctionHouse.getItemsOnSale();
-                        System.out.print("Pushing Items for Sale:");
-                        for(Item thingy: auctionHouse.getItemsOnSale()){
-                            System.out.print(" " + thingy.getItemName());
+                        if(itemsOnSale.size() > 0){
+                            System.out.print("Pushing Items for Sale:");
+                            for(Item thingy: auctionHouse.getItemsOnSale()){
+                                System.out.print(" " + thingy.getItemName());
+                            }
+                            System.out.println();
+                            for(Item i:itemsOnSale) {
+                                itemMsg+=i.getItemName();
+                                itemMsg+= ":";
+                                itemMsg+=i.getItemID();
+                                itemMsg+= ":";
+                                itemMsg+=i.getDescription();
+                                itemMsg+= ":";
+                                itemMsg+=i.getCurrentBid();
+                                itemMsg+= ":";
+                                itemMsg+=i.getMinimumBid();
+                                itemMsg+= ":";
+                                itemMsg+=i.getTimeLeft();
+                                itemMsg+= ";";
+                            }
+                        }else{
+                            itemMsg += "null";
                         }
-                        System.out.println();
-                        String itemMsg = "Items/";
-                        for(Item i:itemsOnSale) {
-                            itemMsg+=i.getItemName();
-                            itemMsg+= ":";
-                            itemMsg+=i.getItemID();
-                            itemMsg+= ":";
-                            itemMsg+=i.getDescription();
-                            itemMsg+= ":";
-                            itemMsg+=i.getCurrentBid();
-                            itemMsg+= ":";
-                            itemMsg+=i.getMinimumBid();
-                            itemMsg+= ":";
-                            itemMsg+=i.getTimeLeft();
-                            itemMsg+= ";";
-                        }
+
                         printerWriter.println(itemMsg);
                         printerWriter.flush();
                     }
                     else if (clientMessage.contains("autoBidder")) {
                         List<Item> itemsOnSale = auctionHouse.getItemsOnSale();
-                        String itemMsg = "Items/";
+                        itemMsg = "Items/";
                         for(Item i:itemsOnSale) {
                             itemMsg+=auctionHouse.getCompanyName();
                             itemMsg+= ":";
@@ -96,6 +101,9 @@ public class AuctionHouseProxy implements Runnable{
                         System.out.println("Processing New $" + bid + " bid on ItemID " + itemID);
 
                         auctionHouse.processBid(this, bid, bankAccount, itemID);
+                    }else if(clientMessage.contains("name")){
+                        printerWriter.println("name:" + auctionHouse.getCompanyName());
+                        printerWriter.flush();
                     }
                 }
             } catch (IOException e) {

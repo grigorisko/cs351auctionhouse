@@ -21,6 +21,7 @@ public class AgentProxy implements Runnable{
     private List<Item> chosenList;
     private HashMap<String, AgentAHProxy> connectedAHs;
     private AgentAHProxy selectedAH;
+    private String selectedAH_Name; // Used for emergency disconnect.
     private boolean messageParsed = true; //boolean to wait for message parsing before displaying in console
     private Agent agent;
     private int activeBids = 0;
@@ -176,6 +177,13 @@ public class AgentProxy implements Runnable{
                                 String auctionHouseOption = "" + menuEntry;
                                 if(menuInput.equals(auctionHouseOption)){
                                     selectedAH = ahProxy;
+                                    ahProxy.sendAHMsg("name");
+                                    selectedAH.setAhMessageParsed(false);
+                                    while(!selectedAH.isAhMessageParsed()){
+                                        Thread.sleep(50);
+                                    }
+                                    selectedAH_Name = selectedAH.getReturnMessage();
+
                                     selectedAH.setAhMessageParsed(false);
                                     selectedAH.sendAHMsg("items");
                                     while(!selectedAH.isAhMessageParsed()){
@@ -191,85 +199,93 @@ public class AgentProxy implements Runnable{
                     }
                     //display third page menu, which is the item menu of a specific AH
                     else if(menu.equals(Menu.THIRD)) {
-                        System.out.println("Bid on an item using format: Row BidAmount");
                         //get items on sale from selected auction house
                         //items = selectedAH.sendAHMsg("items");
-                        selectedAH.setAhMessageParsed(false);
-                        selectedAH.sendAHMsg("items");
-                        while(!selectedAH.isAhMessageParsed()){
-                            Thread.sleep(50);
-                        }
-                        items = selectedAH.getReturnMessage();
-                        System.out.println("Return Item Message: " + items);
-                        String[] itemsOnSale = items.split(";");
-                        List<String> itemStrings = new ArrayList<>();
-                        for(String s:itemsOnSale) {
-                            String itemInfo = "";
-                            String[] splitItemInfo = s.split(":");
-                            itemInfo = "Item Name: " + splitItemInfo[0] + ", Item ID: " + splitItemInfo[1] + ", Item Description: " + splitItemInfo[2]
-                                    + ", Current Bid: " + splitItemInfo[3] + ", Minimum Bid: " + splitItemInfo[4]
-                                    + ", Time Left: " + splitItemInfo[5];
-                            itemStrings.add(itemInfo);
-                        }
-                        for(int i=0;i<itemStrings.size();i++){
-                            int menuEntry = i+1;
-                            System.out.println(menuEntry + ". " +itemStrings.get(i));
-                        }
-                        int previousEntry = itemStrings.size()+1;
-                        System.out.println(previousEntry + ". Previous Menu");
-                        String menuInput = scanner.nextLine();
-                        //go back to previous menu
-                        if(menuInput.equals("" + previousEntry)) {
-                            menu = Menu.SECOND;
-                        }
-                        else {
-                            //prevent bid message console lock if auction house
-                            //disconnected when we tried to place a bid
-                            if(!selectedAH.getAgentToAHSocket().isClosed()) {
-                                // Displays all items in an AH to bid
-                                if (menuInput.split(" ").length == 2) {
-                                    String desiredRow = menuInput.split(" ")[0];
-                                    String bidPrice = menuInput.split(" ")[1];
-                                    for (int i = 0; i < itemStrings.size(); i++) {
-                                        int menuEntry = i + 1;
-                                        String itemSelected = "" + menuEntry;
-                                        if (desiredRow.equals(itemSelected)) {
-                                            //set item to bid on
-                                            String[] words = menuInput.split(" ");
-                                            try {
-                                                // This giant line of code just grabs itemID from our
-                                                // item description "Item Name: ~, Item ID: ~,...."
-                                                int itemID = Integer.parseInt(itemStrings.get(Integer.parseInt(desiredRow) - 1).split(", ")[1].split("Item ID: ")[1]);
-                                                double bid = Double.parseDouble(bidPrice);
-                                                //send bid to auction house
-                                                System.out.println("Bid Sent.");
-                                                //String bidStatus = selectedAH.sendAHMsg("trybid:"+itemID+":"+bid+":"+bankAccountNumber);
-                                                selectedAH.setAhMessageParsed(false);
-                                                selectedAH.sendAHMsg("trybid:" + itemID + ":" + bid + ":" + bankAccountNumber);
-                                                while (!selectedAH.isAhMessageParsed()) {
-                                                    Thread.sleep(50);
+                        try{
+                            selectedAH.setAhMessageParsed(false);
+                            selectedAH.sendAHMsg("items");
+                            while(!selectedAH.isAhMessageParsed()){
+                                Thread.sleep(50);
+                            }
+                            items = selectedAH.getReturnMessage();
+                            String[] itemsOnSale = items.split(";");
+                            List<String> itemStrings = new ArrayList<>();
+                            for(String s:itemsOnSale) {
+                                String itemInfo = "";
+                                String[] splitItemInfo = s.split(":");
+                                itemInfo = "Item Name: " + splitItemInfo[0] + ", Item ID: " + splitItemInfo[1] + ", Item Description: " + splitItemInfo[2]
+                                        + ", Current Bid: " + splitItemInfo[3] + ", Minimum Bid: " + splitItemInfo[4]
+                                        + ", Time Left: " + splitItemInfo[5];
+                                itemStrings.add(itemInfo);
+                            }
+                            // Print prompt after our request in case we need to abort, console doesn't look funky.
+                            System.out.println("Bid on an item using format: Row BidAmount");
+                            for(int i=0;i<itemStrings.size();i++){
+                                int menuEntry = i+1;
+                                System.out.println(menuEntry + ". " +itemStrings.get(i));
+                            }
+                            int previousEntry = itemStrings.size()+1;
+                            System.out.println(previousEntry + ". Previous Menu");
+                            String menuInput = scanner.nextLine();
+                            //go back to previous menu
+                            if(menuInput.equals("" + previousEntry)) {
+                                menu = Menu.SECOND;
+                            }
+                            else {
+                                //prevent bid message console lock if auction house
+                                //disconnected when we tried to place a bid
+                                if(!selectedAH.getAgentToAHSocket().isClosed()) {
+                                    // Displays all items in an AH to bid
+                                    if (menuInput.split(" ").length == 2) {
+                                        String desiredRow = menuInput.split(" ")[0];
+                                        String bidPrice = menuInput.split(" ")[1];
+                                        for (int i = 0; i < itemStrings.size(); i++) {
+                                            int menuEntry = i + 1;
+                                            String itemSelected = "" + menuEntry;
+                                            if (desiredRow.equals(itemSelected)) {
+                                                //set item to bid on
+                                                String[] words = menuInput.split(" ");
+                                                try {
+                                                    // This giant line of code just grabs itemID from our
+                                                    // item description "Item Name: ~, Item ID: ~,...."
+                                                    int itemID = Integer.parseInt(itemStrings.get(Integer.parseInt(desiredRow) - 1).split(", ")[1].split("Item ID: ")[1]);
+                                                    double bid = Double.parseDouble(bidPrice);
+                                                    //send bid to auction house
+                                                    System.out.println("Bid Sent.");
+                                                    //String bidStatus = selectedAH.sendAHMsg("trybid:"+itemID+":"+bid+":"+bankAccountNumber);
+                                                    selectedAH.setAhMessageParsed(false);
+                                                    selectedAH.sendAHMsg("trybid:" + itemID + ":" + bid + ":" + bankAccountNumber);
+                                                    while (!selectedAH.isAhMessageParsed()) {
+                                                        Thread.sleep(50);
+                                                    }
+                                                    String bidStatus = selectedAH.getReturnMessage();
+                                                    System.out.println(bidStatus);
+                                                    if (bidStatus.equals("ACCEPTED")) {
+                                                        increaseActiveBids();
+                                                    }
+                                                } catch (NumberFormatException e) {
+                                                    System.out.println("Incorrect bid amount input");
                                                 }
-                                                String bidStatus = selectedAH.getReturnMessage();
-                                                System.out.println(bidStatus);
-                                                if (bidStatus.equals("ACCEPTED")) {
-                                                    increaseActiveBids();
-                                                }
-                                            } catch (NumberFormatException e) {
-                                                System.out.println("Incorrect bid amount input");
                                             }
                                         }
-                                    }
 
+                                    }
+                                }else if(selectedAH.getAgentToAHSocket().isClosed()){
+                                    //Inform the user that the auction house
+                                    //disconnected and go back to the second menu
+                                    System.out.println("Auction House Disconnected");
+                                    menu = Menu.SECOND;
+                                }else {
+                                    System.out.println("Incorrect input");
                                 }
-                            }else if(selectedAH.getAgentToAHSocket().isClosed()){
-                                //Inform the user that the auction house
-                                //disconnected and go back to the second menu
-                                System.out.println("Auction House Disconnected");
-                                menu = Menu.SECOND;
-                            }else {
-                                System.out.println("Incorrect input");
                             }
+                        }catch (Exception e){
+                            // Activates when an error happens
+                            System.out.println("Auction House Empty...removing from list.");
+                            removeAuctionHouse(selectedAH_Name);
+                            menu = Menu.SECOND;
                         }
+
                     }
 
                 }

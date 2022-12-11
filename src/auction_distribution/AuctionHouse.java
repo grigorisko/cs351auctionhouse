@@ -1,5 +1,5 @@
 package auction_distribution;
-/** TODO
+/**
  *  Create the hashmap for easier access with the Host and the port information
  *  Maybe a function that give out the port and host information through the name of the company (auction house)
  *  Communicate to the bank?????????
@@ -193,16 +193,9 @@ public class AuctionHouse {
         }).start();
     }
 
-    private Item sellNewItem() {
+    private synchronized Item sellNewItem() {
         Random rand = new Random();
-        Item itemToSell = null; 
-        while (true) {
-            Item tempItem = inventoryList.get(rand.nextInt(inventoryList.size()));
-            if (!itemsOnSale.contains(tempItem)) {
-                itemToSell = tempItem;
-                break;
-            }
-        }
+        Item itemToSell = inventoryList.remove(rand.nextInt(inventoryList.size()));
         itemToSell.setItemID(itemID);
         itemID++;
         return itemToSell;
@@ -231,8 +224,8 @@ public class AuctionHouse {
             }
             for (int i=0;i<3;i++) {
 
-                itemsOnSale.add(sellNewItem());
-
+//                itemsOnSale.add(sellNewItem());
+                getItemsOnSale().add(sellNewItem());
             }
 
         } catch (IOException e) {
@@ -246,7 +239,7 @@ public class AuctionHouse {
         auctionHouse.sendConsoleInput();
         auctionHouse.startServer();
     }
-    public List<Item> getItemsOnSale() {
+    public synchronized List<Item> getItemsOnSale() {
         return itemsOnSale;
     }
 
@@ -333,24 +326,13 @@ public class AuctionHouse {
             item.getCurrentWinner().sendAgentMsg("finalize;"+this.bankAccount+";"+item.getCurrentBid());
             item.setDefaults(); // Sometimes reappears in menu, this removes previous bid prices.
 
-            System.out.println("Item: " + item.getItemName() + " is it in the list: " + itemsOnSale.contains(item));
-            itemsOnSale.remove(item);  // Removes from menu of top 3 items.
-            System.out.println("Item: " + item.getItemName() + " is it in the list: " + itemsOnSale.contains(item));
+            System.out.println("Item: " + item.getItemName() + " is it in the list: " + getItemsOnSale().contains(item));
+            getItemsOnSale().remove(item);
+            System.out.println("Item: " + item.getItemName() + " is it in the list: " + getItemsOnSale().contains(item));
 
             inventoryList.remove(item);  // Removes from inventory.
-            System.out.print("Updated Inventory List:");
-            for(Item thingy : inventoryList){
-                System.out.print(" " + thingy.getItemName());
-            }
-            System.out.println();
-
-            System.out.print("Updated itemOnSale List:");
-            for(Item thingy : itemsOnSale){
-                System.out.print(" " + thingy.getItemName());
-            }
-            System.out.println();
             if(inventoryList.size() > 0){
-                itemsOnSale.add(sellNewItem());
+                getItemsOnSale().add(sellNewItem());
             }
         }
     }

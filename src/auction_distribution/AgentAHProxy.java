@@ -71,6 +71,9 @@ public class AgentAHProxy implements Runnable{
                     else if(message.contains("finalize")) {
                         agentProxy.sendBankMsg(message);
                         agentProxy.decreaseActiveBids();
+                    }else if(message.contains("name")){
+                        returnMessage = message.split(":")[1];
+                        ahMessageParsed = true;
                     }
                     //handle auction house exiting
                     //close socket and remove from AH list
