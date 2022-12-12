@@ -73,13 +73,13 @@ public class BankProxy implements Runnable{
             //send agents new AH info
             for(BankProxy bankProxy: bankProxies) {
                 if (!bankProxy.isAuctionHouse) {
-                    bankProxy.printWriter.println("newAH "+companyName+";"+auctionHouseServer);
+                    bankProxy.printWriter.println("newAH/"+companyName+";"+auctionHouseServer);
                     bankProxy.printWriter.flush();
                 }
             }
 
         }else{  // Client = Agent
-            System.out.println("New <Agent> Connected w/ details: " + clientInfo);
+            System.out.println("New <Agent> Connected w/ details: " + clientInfo.split(";")[1]);
             String balanceInfo = bufferedReader.readLine();
 
 
@@ -247,7 +247,7 @@ public class BankProxy implements Runnable{
                             }
                         }
                         else {
-                            System.out.println("Agent " + clientMessage.split(" ")[1] + " exiting");
+                            System.out.println(clientMessage);
                         }
                         //remove this bankproxy
                         bankProxies.remove(this);

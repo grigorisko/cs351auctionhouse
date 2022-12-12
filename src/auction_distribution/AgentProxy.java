@@ -65,7 +65,7 @@ public class AgentProxy implements Runnable{
 
 
         // Send Initial Client Information to Bank
-        sendBankMsg("agent;");
+        sendBankMsg("agent;"+clientName);
 
         sendBankMsg(initialBalanceMsg);
 
@@ -344,8 +344,8 @@ public class AgentProxy implements Runnable{
                     // Read income message
                     String message = in.readLine();
                     //new auction house connected
-                    if(message.contains("newAH ")) {
-                        String ahs = message.split(" ")[1];
+                    if(message.contains("newAH/")) {
+                        String ahs = message.split("/")[1];
                         String ahName = ahs.split(";")[0];
                         String address = ahs.split(";")[1];
                         int port = Integer.parseInt(ahs.split(";")[2]);
