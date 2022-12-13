@@ -181,7 +181,7 @@ public class AuctionHouse {
                             }
                             //notify agents that we are exiting
                             for(AuctionHouseProxy auctionHouseProxy:connectedClients) {
-                                    auctionHouseProxy.sendAgentMsg(companyName+" exiting");
+                                    auctionHouseProxy.sendAgentMsg("exiting/"+companyName);
                             }
                             System.exit(0);
                         }

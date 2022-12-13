@@ -94,9 +94,10 @@ public class AgentAHProxy implements Runnable{
                     //close socket and remove from AH list
                     else if(message.contains("exiting")) {
                         agentToAHSocket.close();
-                        agentProxy.removeAuctionHouse(message.split(" ")[0]);
+                        String companyName = message.split("/")[1];
+                        agentProxy.removeAuctionHouse(companyName);
                         System.out.println("Auction house " +
-                                message.split(" ")[0] + " exiting.");
+                                companyName + " exiting.");
                     }
                 }
             } catch (IOException e) {
