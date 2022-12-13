@@ -58,10 +58,19 @@ public class BankProxy implements Runnable{
 
         // Parse initial client data based what client connected (AH or Agent)
         if(clientInfo.toLowerCase().contains("server")){  // Client = AH
+            String companyName = clientInfo.split(";")[0];
+
+            // Infinite While Loop until given a Unique Name :)
+            while(getActiveAuctionHouses().toLowerCase().contains(companyName.toLowerCase())){
+                printWriter.println("Bank Requires Unique Auction-House Name.");
+                printWriter.flush();
+
+                companyName = bufferedReader.readLine().split(";")[0];
+            }
+
             System.out.println("New <AuctionHouse> Connected w/ Server details: " + clientInfo);
             this.isAuctionHouse = true;
             // Add AuctionHouse to list of active AuctionHouses
-            String companyName = clientInfo.split(";")[0];
             String auctionHouseServer = clientInfo.split("server;")[1];
             String port = auctionHouseServer.split(";")[1];
             String IPAddress = clientSocket.getRemoteSocketAddress().toString().split("/")[1].split(":")[0];
