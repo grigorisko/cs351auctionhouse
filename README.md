@@ -70,7 +70,7 @@ it to the `BIN` location of our JDK/ZULU file. This has to be applied for all co
 11. Choose a specific AuctionHouse, then apply step 6 to make bid with the following format bid "ItemIndex bidAmount". For example:
     ![img_2.png](resources/img_2.png)
     In the bottom, "1" is the "ItemIndex" for the first item and "4" is the "bidAmount".
-12. Make sure your bid to an item has to be larger than the CurrentBid + MinimumBid to be `ACCEPTED`.
+12. Make sure your bid to an item has to be larger than the MinimumBid to be `ACCEPTED`.
 
 ### Team's participation (need to go through the team for last final check)
 `Vasileios Grigorios Kourakos` responsible for most of the work.\
