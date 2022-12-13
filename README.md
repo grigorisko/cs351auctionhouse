@@ -1,4 +1,5 @@
 ### Project 5: Auction Distribution by Fermin Ramos, Vasileios Grigorios Kourakos and Loc Tung Su
+**_README.MD written by Loc Su_**
 
 
 ### General Description
@@ -71,7 +72,39 @@ it to the `BIN` location of our JDK/ZULU file. This has to be applied for all co
     In the bottom, "1" is the "ItemIndex" for the first item and "4" is the "bidAmount".
 12. Make sure your bid to an item has to be larger than the CurrentBid + MinimumBid to be `ACCEPTED`.
 
-### Team's participation
-I am just happy to be here :D- **Loc** TODO: Write later
+### Team's participation (need to go through the team for last final check)
+`Vasileios Grigorios Kourakos` responsible for most of the work.\
+Initially responsible for the interaction from the AuctionHouse to the Bank and vice versa. Everything Bank related
+such as BankProxy, BankAccount.
+He is also responsible for creating the Agent's menu, part of the bidding logic and the 
+Bank balance checking when a bid is placed.
+Vasileios Grigorios Kourakos is also responsible for the AutoBidder since he came up with
+the idea to have two different proxy for the Agent, one for the Bank and one for the 
+AuctionHouse. Same concept for with the AutoBidder.
+He also did the IP connection for multiple computers.
+He helped improving the communication between different party.
+He and Fermin worked on the bid timer.
+
+`Fermin Ramos` put in the second most work. \
+He creates the foundation of the connection between Bank, the AuctionHouse, and the Agent, make it able to communicate to each other.
+He is responsible for the display of multiple available AuctionHouse in order
+to help the Agent connect to all of it.
+He also put a lot of work in resolving different bugs such as the menu bug, 
+the item update bug, etc.
+He and Vasileios worked on the bid timer.
+He also helped Vasileios a ton in the bidding function.
+He helped to display connection notification in the Bank whenever a new Agent connect to the bank.
+
+
+`Loc Su` put in the least work.\
+Since personally, I was struggling with this project, I tried to do everything else.
+Not as much coding as I wanted.
+I helped Fermin with establishing connection between the Agent and AuctionHouse,
+especially with multiple AuctionHouse.
+I fix the itemID bugs, some Item class feature. I helped with other debugging process too......
+I wrote README and the project diagram and the code comment
+
+
+
 
 
