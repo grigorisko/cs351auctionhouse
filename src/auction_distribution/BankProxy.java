@@ -246,14 +246,16 @@ public class BankProxy implements Runnable{
                     //auction house deregistering
                     else if(clientMessage.contains("exiting")) {
                         if(isAuctionHouse) {
-                            System.out.println("Auction House " + clientMessage.split(" ")[0] + " exiting");
+                            System.out.println("Auction House " + clientMessage.split("/")[0] + " exiting");
                             //remove auction house from list
                             for (String s : activeAuctionHouses) {
-                                if (s.contains(clientMessage.split(" ")[0])) {
+                                if (s.split(";")[0].equalsIgnoreCase(clientMessage.split("/")[0])) {
                                     removeAuctionHouse(s);
                                     break;
                                 }
                             }
+                            printWriter.println("exit acknowledged");
+                            printWriter.flush();
                         }
                         else {
                             System.out.println(clientMessage);

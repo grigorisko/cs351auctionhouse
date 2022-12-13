@@ -115,31 +115,34 @@ public class AuctionHouse {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while(true){
+                while (bankAHSocket.isConnected() && !bankAHSocket.isClosed()) {
+
                     try {
-                        while(bankAHSocket.isConnected()){
-                            String message = bufferedReader.readLine();
-                            //bank confirmed bid
-                            if(message.equals("Bid accepted")) {
-                                balanceChecked = true;
-                                bidAccepted = true;
-                            }
-                            //bank declined bid
-                            else if(message.equals("Insufficient funds")) {
-                                balanceChecked = true;
-                                bidAccepted = false;
-                            }
-                            //bank sending us our account number
-                            else if(message.contains("accountNumber:"))
-                            {
-                                bankAccount = message.split(":")[1];
-                            }
-                            System.out.println(message);
+                        String message = bufferedReader.readLine();
+                        //bank confirmed bid
+                        if (message.equals("Bid accepted")) {
+                            balanceChecked = true;
+                            bidAccepted = true;
                         }
+                        //bank declined bid
+                        else if (message.equals("Insufficient funds")) {
+                            balanceChecked = true;
+                            bidAccepted = false;
+                        }
+                        //bank sending us our account number
+                        else if (message.contains("accountNumber:")) {
+                            bankAccount = message.split(":")[1];
+                        }
+                        else if(message.contains("exit acknowledged")) {
+                            //close socket
+                            bankAHSocket.close();
+                            //exit
+                            System.exit(0);
+                        }
+                        System.out.println(message);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-
                 }
             }
         }).start();
@@ -171,19 +174,12 @@ public class AuctionHouse {
                         //else cleanup
                         else {
                             //message bank that we are exiting
-                            printWriter.println(companyName + " exiting");
+                            printWriter.println(companyName + "/exiting");
                             printWriter.flush();
-                            try {
-                                //close bank socket
-                                bankAHSocket.close();
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
                             //notify agents that we are exiting
                             for(AuctionHouseProxy auctionHouseProxy:connectedClients) {
                                     auctionHouseProxy.sendAgentMsg("exiting/"+companyName);
                             }
-                            System.exit(0);
                         }
                     }
                     else {
