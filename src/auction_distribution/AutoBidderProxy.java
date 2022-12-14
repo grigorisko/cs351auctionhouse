@@ -159,12 +159,14 @@ public class AutoBidderProxy implements Runnable{
                                     }
                                 }
                                 String items = ahProxy.getReturnMessage();
-                                for (String s : items.split(";")) {
-                                    double minBid = Double.parseDouble(s.split(":")[2]);
-                                    String currentWinner = s.split(":")[3];
-                                    //only add to available item list if we can actually bid on them
-                                    if (trueBalance >= minBid && !bankAccountNumber.equals(currentWinner)) {
-                                        itemList.add(s);
+                                if(!items.equals("null")) {
+                                    for (String s : items.split(";")) {
+                                        double minBid = Double.parseDouble(s.split(":")[2]);
+                                        String currentWinner = s.split(":")[3];
+                                        //only add to available item list if we can actually bid on them
+                                        if (trueBalance >= minBid && !bankAccountNumber.equals(currentWinner)) {
+                                            itemList.add(s);
+                                        }
                                     }
                                 }
                             }
