@@ -258,6 +258,8 @@ public class BankProxy implements Runnable{
                             printWriter.flush();
                         }
                         else {
+                            printWriter.println("exit acknowledged");
+                            printWriter.flush();
                             System.out.println(clientMessage);
                         }
                         //remove this bankproxy

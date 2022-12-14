@@ -167,8 +167,6 @@ public class AgentProxy implements Runnable{
                                     ahProxy.sendAHMsg("Agent " + clientName + " exiting");
                                     ahProxy.getAgentToAHSocket().close();
                                 }
-                                agentToBankSocket.close();
-                                agent.exit();
                             }
                             else {
                                 System.out.println("Cannot exit while bids are active");
@@ -340,7 +338,7 @@ public class AgentProxy implements Runnable{
         String clientMessage = "";
         while(true){
             try {
-                while(agentToBankSocket.isConnected()){
+                while(agentToBankSocket.isConnected() && !agentToBankSocket.isClosed()){
                     // Read income message
                     String message = in.readLine();
                     //new auction house connected
@@ -362,6 +360,10 @@ public class AgentProxy implements Runnable{
                     }
                     if(message.contains("accountnumber:")) {
                         bankAccountNumber = message.split(":")[1];
+                    }
+                    if(message.contains("exit acknowledged")) {
+                        agentToBankSocket.close();
+                        agent.exit();
                     }
                     // Figure out who it's from
 
