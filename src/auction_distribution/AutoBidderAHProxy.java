@@ -90,9 +90,9 @@ public class AutoBidderAHProxy implements Runnable{
                     //close socket and remove from AH list
                     else if(message.contains("exiting")) {
                         autoBidderToAHSocket.close();
-                        autoBidderProxy.removeAuctionHouse(message.split(" ")[0]);
+                        autoBidderProxy.removeAuctionHouse(message.split("/")[1]);
                         System.out.println("Auction house " +
-                                message.split(" ")[0] + " exiting.");
+                                message.split("/")[1] + " exiting.");
                     }
                 }
             } catch (IOException e) {
