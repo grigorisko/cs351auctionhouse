@@ -240,8 +240,6 @@ public class AutoBidderProxy implements Runnable{
                                 ahProxy.sendAHMsg("Auto Bidder " + clientName + " exiting");
                                 ahProxy.getAutoBidderToAHSocket().close();
                             }
-                            autoBidderToBankSocket.close();
-                            autoBidder.exit();
                         }
                         else {
                             System.out.println("Cannot exit while bids are active");
@@ -271,7 +269,7 @@ public class AutoBidderProxy implements Runnable{
         String clientMessage = "";
         while(true){
             try {
-                while(autoBidderToBankSocket.isConnected()){
+                while(autoBidderToBankSocket.isConnected() && !autoBidderToBankSocket.isClosed()){
                     // Read income message
                     String message = in.readLine();
                     //new auction house connected
@@ -292,6 +290,10 @@ public class AutoBidderProxy implements Runnable{
                     }
                     if(message.contains("accountnumber:")) {
                         bankAccountNumber = message.split(":")[1];
+                    }
+                    if(message.contains("exit acknowledged")) {
+                        autoBidderToBankSocket.close();
+                        autoBidder.exit();
                     }
                     // Figure out who it's from
 

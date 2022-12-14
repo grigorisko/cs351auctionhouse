@@ -127,6 +127,7 @@ public class AgentProxy implements Runnable{
         FIRST,
         SECOND,
         THIRD,
+        EXIT
     }
     /**
      * Gets Console Input
@@ -167,6 +168,7 @@ public class AgentProxy implements Runnable{
                                     ahProxy.sendAHMsg("Agent " + clientName + " exiting");
                                     ahProxy.getAgentToAHSocket().close();
                                 }
+                                menu = Menu.EXIT;
                             }
                             else {
                                 System.out.println("Cannot exit while bids are active");
