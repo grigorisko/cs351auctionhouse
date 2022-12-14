@@ -27,11 +27,14 @@ public class Agent {
      * @throws IOException
      */
     public Agent() throws IOException {
-        System.out.println("Enter Bank Address");
+        System.out.println("Enter Bank Address/Hostname");
         Scanner scanner = new Scanner(System.in);
         String bankAddress = scanner.nextLine();
+        System.out.println("Enter Bank port");
+        String portString = scanner.nextLine();
+        int port = Integer.parseInt(portString);
         // Create Agent Proxy for Communication to Bank & AHs
-        AgentProxy agentProxy = new AgentProxy(new Socket(bankAddress, 4999), this);
+        AgentProxy agentProxy = new AgentProxy(new Socket(bankAddress, port), this);
         agentProxy.run();
     }
 

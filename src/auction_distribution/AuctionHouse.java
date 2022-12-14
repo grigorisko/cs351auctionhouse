@@ -45,17 +45,19 @@ public class AuctionHouse {
      */
     public AuctionHouse() throws IOException {
         auctionHouse = this;
-        System.out.println("Enter Bank Address");
+        System.out.println("Enter Bank Address/Hostname");
         Scanner scanner = new Scanner(System.in);
         String bankAddress = scanner.nextLine();
+        System.out.println("Enter Bank port");
+        String portString = scanner.nextLine();
+        int port = Integer.parseInt(portString);
         // Create Bank-AuctionHouse Connection
-        bankAHSocket = new Socket(bankAddress, 4999);
+        bankAHSocket = new Socket(bankAddress, port);
         bufferedReader = new BufferedReader(new InputStreamReader(bankAHSocket.getInputStream()));
         printWriter = new PrintWriter(bankAHSocket.getOutputStream());
 
         // Create AuctionHouse Server
-        int random = new Random().nextInt(1000,5000);
-        serverSocket = new ServerSocket(random);  // TODO: change this to be actual address & port
+        serverSocket = new ServerSocket(0);
 
         //Send Server Data to bank. Infinite Loop until Connection Successful :)
         String bankConnectionMsg = "";
@@ -67,7 +69,7 @@ public class AuctionHouse {
 
             // Get Server Address & Port
             int serverPort = serverSocket.getLocalPort();
-            sendBankMsg(companyName + ";server;localhost;"+serverPort);
+            sendBankMsg(companyName + ";server;address;"+serverPort);
 
             // Check to see if Bank Accepted our Name, Address, & Port
             bankConnectionMsg = bufferedReader.readLine();

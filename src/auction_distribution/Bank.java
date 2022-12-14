@@ -32,7 +32,7 @@ public class Bank {
     public Bank(int port) throws IOException {
         serverSocket = new ServerSocket(port, 20, InetAddress.getLocalHost());
         System.out.println(serverSocket.getInetAddress());
-        System.out.println(InetAddress.getLocalHost().getHostAddress());
+        System.out.println(InetAddress.getLocalHost().getHostAddress()+":"+serverSocket.getLocalPort());
     }
 
     /**
@@ -76,7 +76,7 @@ public class Bank {
      * @throws IOException
      */
     public static void main(String[] args) throws IOException {
-        Bank bank = new Bank(4999);
+        Bank bank = new Bank(0);
         bank.startServer();
     }
 }

@@ -26,11 +26,14 @@ public class AutoBidder {
      * @throws IOException
      */
     public AutoBidder() throws IOException {
-        System.out.println("Enter Bank Address");
+        System.out.println("Enter Bank Address/Hostname");
         Scanner scanner = new Scanner(System.in);
         String bankAddress = scanner.nextLine();
+        System.out.println("Enter Bank port");
+        String portString = scanner.nextLine();
+        int port = Integer.parseInt(portString);
         // Create AutoBidder Proxy for Communication to Bank & AHs
-        AutoBidderProxy autoBidderProxyProxy = new AutoBidderProxy(new Socket(bankAddress, 4999), this);
+        AutoBidderProxy autoBidderProxyProxy = new AutoBidderProxy(new Socket(bankAddress, port), this);
         autoBidderProxyProxy.run();
     }
 
